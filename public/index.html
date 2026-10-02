@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>SAE ITOSHI // CRIMSON AI</title>
+  <title>CRIMSON AI</title>
   <style>
     * {
       box-sizing: border-box;
@@ -20,27 +20,40 @@
       overflow: hidden;
     }
 
-    /* Écran d'animation d'entrée */
+    /* Écran d'animation d'entrée avec Robot */
     #splash-screen {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: #000;
+      background: #000000;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       z-index: 9999;
-      animation: fadeOutSplash 1s forwards 2.2s;
+      animation: fadeOutSplash 1s forwards 2.6s;
+    }
+
+    .robot-avatar {
+      width: 100px;
+      height: 100px;
+      margin-bottom: 15px;
+      filter: drop-shadow(0 0 15px rgba(220, 20, 60, 0.8));
+      animation: floatRobot 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatRobot {
+      from { transform: translateY(0px) scale(0.98); }
+      to { transform: translateY(-10px) scale(1.02); }
     }
 
     .splash-title {
-      font-size: 2rem;
+      font-size: 2.2rem;
       font-weight: 900;
       color: #dc143c;
-      letter-spacing: 4px;
+      letter-spacing: 5px;
       text-transform: uppercase;
       text-shadow: 0 0 20px rgba(220, 20, 60, 0.8);
       animation: pulseGlow 1.2s infinite alternate;
@@ -48,9 +61,9 @@
 
     .splash-sub {
       margin-top: 10px;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: #666;
-      letter-spacing: 2px;
+      letter-spacing: 3px;
     }
 
     @keyframes pulseGlow {
@@ -89,7 +102,7 @@
     }
 
     header p {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: #777;
       margin-top: 2px;
       letter-spacing: 1px;
@@ -147,7 +160,7 @@
       border-radius: 8px;
     }
 
-    /* Zone de Saisie Fixe (Clavier Mobile) */
+    /* Zone de Saisie Fixe */
     #input-container {
       padding: 12px 14px;
       background-color: #0d0d0d;
@@ -213,24 +226,32 @@
 </head>
 <body>
 
-  <!-- Animation d'Entrée -->
+  <!-- Écran d'Entrée avec Robot Cyberpunk -->
   <div id="splash-screen">
-    <div class="splash-title">SAE ITOSHI</div>
-    <div class="splash-sub">EVALUATION DES CAPACITES...</div>
+    <svg class="robot-avatar" viewBox="0 0 24 24" fill="none" stroke="#dc143c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="11" width="18" height="10" rx="2" />
+      <circle cx="12" cy="5" r="2" />
+      <path d="M12 7v4" />
+      <line x1="8" y1="15" x2="8" y2="15.01" stroke-width="3" />
+      <line x1="16" y1="15" x2="16" y2="15.01" stroke-width="3" />
+      <path d="M9 18h6" />
+    </svg>
+    <div class="splash-title">CRIMSON AI</div>
+    <div class="splash-sub">INITIALISATION DU SYSTEME...</div>
   </div>
 
   <div id="app-container">
     <header>
-      <h1>SAE ITOSHI</h1>
-      <p>CRIMSON SYSTEM // ANALYSE TACTIQUE</p>
+      <h1>CRIMSON AI</h1>
+      <p>CONSEILLER TACTIQUE // NON FILTRÉ</p>
     </header>
 
     <div id="chat-container">
-      <div class="message ai">Montre-moi ce que tu vaux, Brayan. Ne me fais pas perdre mon temps avec des futilités.</div>
+      <div class="message ai">Montre-moi ce que tu vaux, Brayan. Ne me fais pas perdre mon temps.</div>
     </div>
 
     <div id="input-container">
-      <input type="text" id="prompt" placeholder="Saisis ton message..." autocomplete="off" onkeydown="if(event.key==='Enter') sendPrompt()">
+      <input type="text" id="prompt" placeholder="Pose ta question..." autocomplete="off" onkeydown="if(event.key==='Enter') sendPrompt()">
       <button id="send-btn" onclick="sendPrompt()">Envoyer</button>
     </div>
   </div>
@@ -255,7 +276,7 @@
 
       const loadingDiv = document.createElement('div');
       loadingDiv.className = 'message ai';
-      loadingDiv.textContent = 'Analyse de tes faiblesses...';
+      loadingDiv.textContent = 'Analyse en cours...';
       chat.appendChild(loadingDiv);
       chat.scrollTop = chat.scrollHeight;
 
