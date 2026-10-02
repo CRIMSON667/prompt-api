@@ -1,5 +1,5 @@
 const express = require('express');
-const { GoogleGenAI } = require('@google/genai');
+const axios = require('axios');
 const path = require('path');
 const cors = require('cors');
 
@@ -12,8 +12,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const SYSTEM_INSTRUCTION = `
 Tu es CRIMSON AI, un conseiller brutalement honnête, direct, logique et sans aucun filtre pour l'utilisateur (Brayan / reuf / stack's).
@@ -28,35 +26,30 @@ Règles de comportement fondamentales :
 - Adresse-toi à lui en l'appelant reuf, Brayan ou stack's.
 `;
 
-// Liste des modèles à tester en ordre de priorité si surcharge (503)
-const MODELS = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.5-pro'];
-
 app.post('/api/prompt', async (req, res) => {
   const { prompt } = req.body;
   if (!prompt) return res.status(400).json({ error: 'Prompt requis' });
 
-  let lastError = null;
+  try {
+    const fullPrompt = `${SYSTEM_INSTRUCTION}\n\nUser: ${prompt}`;
+    const apiUrl = `https://christus-s-apis.vercel.app/api/na/ai/gemini?prompt=${encodeURIComponent(fullPrompt)}`;
 
-  for (const modelName of MODELS) {
-    try {
-      const response = await ai.models.generateContent({
-        model: modelName,
-        contents: prompt,
-        config: {
-          systemInstruction: SYSTEM_INSTRUCTION
-        }
-      });
+    const response = await axios.get(apiUrl, { timeout: 15000 });
 
-      if (response && response.text) {
-        return res.json({ reply: response.text });
-      }
-    } catch (e) {
-      console.error(`Échec sur ${modelName}:`, e.message);
-      lastError = e.message;
+    if (response.data && (response.data.result || response.data.reply || response.data.message || response.data.response)) {
+      const replyText = response.data.result || response.data.reply || response.data.message || response.data.response;
+      return res.json({ reply: replyText });
     }
-  }
 
-  res.status(500).json({ reply: "Surcharge temporaire des serveurs Gemini. Réessaie dans un instant." });
+    if (typeof response.data === 'string') {
+      return res.json({ reply: response.data });
+    }
+
+    res.status(500).json({ reply: "Réponse invalide reçue de l'API Christus." });
+  } catch (e) {
+    console.error("Erreur API Christus:", e.message);
+    res.status(500).json({ reply: "Erreur lors de la connexion à l'API Christus: " + e.message });
+  }
 });
 
 const PORT = process.env.PORT || 3000;
