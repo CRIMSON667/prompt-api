@@ -18,7 +18,6 @@ Tu es CRIMSON AI, un conseiller brutalement honnête, direct, logique, visuel et
 
 Directives absolues :
 - Tu es froid, exigeant et chirurgiquement précis.
-- Si l'utilisateur te fournit une image ou demande d'analyser/modifier un visuel, traite la demande avec la même rigueur.
 - Tu t'adresses à lui en l'appelant reuf, Brayan ou stack's.
 `;
 
@@ -42,81 +41,57 @@ app.post('/api/prompt', async (req, res) => {
       prompt.toLowerCase().startsWith('photo de')
     ) && !image;
 
-    // 1. Génération d'une nouvelle image à partir de zéro
+    // 1. Génération d'une nouvelle image
     if (isImageGenerationQuery) {
       try {
         const imgRes = await axios.post(CUSTOM_IMAGE_GEN_API, { prompt: prompt }, { timeout: 30000 });
         const imageUrl = imgRes.data.imageUrl || imgRes.data.url || imgRes.data.image || imgRes.data;
 
         return res.json({
-          reply: "Voilà le visuel généré. Regarde si ça respecte tes exigences.",
+          reply: "Visuel généré.",
           imageUrl: typeof imageUrl === 'string' ? imageUrl : JSON.stringify(imageUrl)
         });
       } catch (imgErr) {
         console.error("Erreur API Génération Image:", imgErr.message);
         const fallbackUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true`;
         return res.json({
-          reply: "Ton API de génération a mis trop de temps à répondre. Passage sur le moteur de secours.",
+          reply: "Génération (Moteur Secours) :",
           imageUrl: fallbackUrl
         });
       }
     }
 
-    let responseText = "";
-
-    // 2. Traitement d'une image existante (Analyse ou Édition)
+    // 2. Traitement d'une image transmise
     if (image) {
-      const imageUrlPrompt = prompt ? prompt : "Analyse cette image et donne ton avis sans pitié.";
-
-      // Analyse textuelle de l'image via Gemini / OpenAI
-      try {
-        const textRes = await axios.post('https://text.pollinations.ai/', {
-          messages: [
-            { role: 'system', content: CRIMSON_SYSTEM },
-            { role: 'user', content: `${imageUrlPrompt}\n[Image transmise]` }
-          ],
-          model: 'openai'
-        }, { timeout: 15000 });
-
-        responseText = typeof textRes.data === 'string' ? textRes.data : JSON.stringify(textRes.data);
-      } catch (e) {
-        responseText = "Image reçue pour traitement.";
+      if (prompt && image.startsWith('http')) {
+        const editApiUrl = `https://azadx69x.is-a.dev/api/editor?url=${encodeURIComponent(image)}&prompt=${encodeURIComponent(prompt)}`;
+        return res.json({
+          reply: "Image modifiée :",
+          imageUrl: editApiUrl
+        });
       }
 
-      // Si l'utilisateur demande une modification de l'image existante
-      if (prompt && (
-        prompt.toLowerCase().includes('modifie') ||
-        prompt.toLowerCase().includes('transforme') ||
-        prompt.toLowerCase().includes('refais') ||
-        prompt.toLowerCase().includes('édit') ||
-        prompt.toLowerCase().includes('edit') ||
-        prompt.toLowerCase().includes('change')
-      )) {
+      if (prompt) {
         try {
-          // Appel de l'API d'édition d'image
-          const editApiUrl = `https://azadx69x.is-a.dev/api/editor?url=${encodeURIComponent(image)}&prompt=${encodeURIComponent(prompt)}`;
-          const editRes = await axios.get(editApiUrl, { timeout: 30000 });
-          const editedImageUrl = editRes.data.imageUrl || editRes.data.url || editRes.data.result || editRes.data;
+          const textRes = await axios.post('https://text.pollinations.ai/', {
+            messages: [
+              { role: 'system', content: CRIMSON_SYSTEM },
+              { role: 'user', content: `${prompt}\n[L'utilisateur a joint une image]` }
+            ],
+            model: 'openai'
+          }, { timeout: 15000 });
 
-          return res.json({
-            reply: responseText,
-            imageUrl: typeof editedImageUrl === 'string' ? editedImageUrl : editApiUrl
-          });
-        } catch (editErr) {
-          console.error("Erreur API Éditeur Image:", editErr.message);
-          // Fallback direct vers l'URL si l'API renvoie le fichier directement
-          const directEditUrl = `https://azadx69x.is-a.dev/api/editor?url=${encodeURIComponent(image)}&prompt=${encodeURIComponent(prompt)}`;
-          return res.json({
-            reply: responseText,
-            imageUrl: directEditUrl
-          });
+          const responseText = typeof textRes.data === 'string' ? textRes.data : JSON.stringify(textRes.data);
+          return res.json({ reply: responseText });
+        } catch (e) {
+          return res.json({ reply: "Incapable d'analyser le visuel pour l'instant." });
         }
       }
 
-      return res.json({ reply: responseText });
+      return res.json({ reply: "Image reçue. Précise ce que tu veux que j'en fasse (analyse ou modification)." });
     }
 
-    // 3. Traitement d'un prompt texte standard
+    // 3. Prompt texte standard
     const response = await axios.post('https://text.pollinations.ai/', {
       messages: [
         { role: 'system', content: CRIMSON_SYSTEM },
@@ -129,14 +104,14 @@ app.post('/api/prompt', async (req, res) => {
     });
 
     if (response.data) {
-      responseText = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+      const responseText = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
       return res.json({ reply: responseText });
     }
 
-    res.status(500).json({ reply: "Tch. Aucune donnée retournée." });
+    res.status(500).json({ reply: "Aucune réponse retournée." });
   } catch (e) {
     console.error("Erreur Backend:", e.message);
-    res.status(500).json({ reply: "Erreur système lors du traitement : " + e.message });
+    res.status(500).json({ reply: "Erreur système : " + e.message });
   }
 });
 
