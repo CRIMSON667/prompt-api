@@ -17,10 +17,10 @@ app.post('/api/prompt', async (req, res) => {
   }
 
   try {
-    // Nom du modèle standard reconnu par le SDK
+    // Utilisation du modèle gemini-2.5-flash mis à jour
     const model = genAI.getGenerativeModel({ 
-      model: 'gemini-1.5-flash',
-      systemInstruction: "Tu es CRIMSON AI, un assistant direct, précis, rigoureux et efficace."
+      model: 'gemini-2.5-flash',
+      systemInstruction: "Tu es CRIMSON AI, un assistant direct, précis, rigoureux et sans détours."
     });
 
     let parts = [];
@@ -45,7 +45,7 @@ app.post('/api/prompt', async (req, res) => {
     return res.json({ reply: replyText });
   } catch (err) {
     console.error("Erreur serveur Gemini:", err);
-    return res.status(500).json({ error: err.message || "Erreur interne lors de la génération." });
+    return res.status(500).json({ error: err.message || "Erreur interne du serveur." });
   }
 });
 
