@@ -21,8 +21,6 @@ Directives absolues :
 - Tu t'adresses à lui en l'appelant reuf, Brayan ou stack's.
 `;
 
-const CUSTOM_IMAGE_GEN_API = "https://gem-tw6a.onrender.com/generate";
-
 app.post('/api/prompt', async (req, res) => {
   const { prompt, image } = req.body;
 
@@ -32,82 +30,40 @@ app.post('/api/prompt', async (req, res) => {
 
   try {
     const cleanPrompt = (prompt || '').toLowerCase().trim();
-    
-    // Détection exhaustive de toutes les intentions de génération d'image
+
     const isImageGenerationQuery = prompt && (
       cleanPrompt.includes('génère') ||
       cleanPrompt.includes('genere') ||
       cleanPrompt.includes('généré') ||
-      cleanPrompt.includes('genere-moi') ||
-      cleanPrompt.includes('génère-moi') ||
-      cleanPrompt.includes('génération') ||
       cleanPrompt.includes('crée') ||
       cleanPrompt.includes('cree') ||
       cleanPrompt.includes('créer') ||
-      cleanPrompt.includes('crée-moi') ||
       cleanPrompt.includes('dessine') ||
-      cleanPrompt.includes('dessin') ||
-      cleanPrompt.includes('fais-moi une image') ||
-      cleanPrompt.includes('fait une image') ||
-      cleanPrompt.includes('fais une photo') ||
-      cleanPrompt.includes('fait une photo') ||
+      cleanPrompt.includes('fais une image') ||
       cleanPrompt.includes('fais un dessin') ||
       cleanPrompt.includes('imagine') ||
-      cleanPrompt.includes('illustre') ||
-      cleanPrompt.includes('montre-moi') ||
-      cleanPrompt.includes('montre moi') ||
-      cleanPrompt.includes('visuel de') ||
       cleanPrompt.includes('generate') ||
-      cleanPrompt.includes('create an image') ||
-      cleanPrompt.includes('draw') ||
       cleanPrompt.startsWith('photo de') ||
-      cleanPrompt.startsWith('photo d\'') ||
-      cleanPrompt.startsWith('image de') ||
-      cleanPrompt.startsWith('image d\'') ||
-      cleanPrompt.startsWith('un dessin de') ||
-      cleanPrompt.startsWith('une illustration de')
+      cleanPrompt.startsWith('image de')
     ) && !image;
 
-    // 1. Génération d'une nouvelle image
+    // 1. Génération d'image ultra-fiable via Pollinations
     if (isImageGenerationQuery) {
-      try {
-        const imgRes = await axios.post(CUSTOM_IMAGE_GEN_API, { prompt: prompt }, { timeout: 15000 });
-        const imageUrl = imgRes.data?.imageUrl || imgRes.data?.url || imgRes.data?.image || imgRes.data;
-
-        if (imageUrl && typeof imageUrl === 'string') {
-          return res.json({
-            reply: "Visuel généré.",
-            imageUrl: imageUrl
-          });
-        } else {
-          throw new Error("Format d'image invalide");
-        }
-      } catch (imgErr) {
-        console.error("Moteur principal indisponible, bascule sur Pollinations:", imgErr.message);
-        const fallbackUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true`;
-        return res.json({
-          reply: "Visuel généré :",
-          imageUrl: fallbackUrl
-        });
-      }
+      const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
+      return res.json({
+        reply: "Visuel généré :",
+        imageUrl: imageUrl
+      });
     }
 
     // 2. Traitement d'une image transmise
     if (image) {
-      if (prompt && image.startsWith('http')) {
-        const editApiUrl = `https://azadx69x.is-a.dev/api/editor?url=${encodeURIComponent(image)}&prompt=${encodeURIComponent(prompt)}`;
-        return res.json({
-          reply: "Image modifiée :",
-          imageUrl: editApiUrl
-        });
-      }
-
       if (prompt) {
         try {
           const textRes = await axios.post('https://text.pollinations.ai/', {
             messages: [
               { role: 'system', content: CRIMSON_SYSTEM },
-              { role: 'user', content: `${prompt}\n[L'utilisateur a joint une image]` }
+              { role: 'user', content: `${prompt}\n[L'utilisateur a transmis un visuel]` }
             ],
             model: 'openai'
           }, { timeout: 15000 });
@@ -118,8 +74,7 @@ app.post('/api/prompt', async (req, res) => {
           return res.json({ reply: "Incapable d'analyser le visuel pour l'instant." });
         }
       }
-
-      return res.json({ reply: "Image reçue. Précise ce que tu veux que j'en fasse (analyse ou modification)." });
+      return res.json({ reply: "Visuel reçu. Précise ton analyse." });
     }
 
     // 3. Prompt texte standard
