@@ -15,17 +15,20 @@ app.post('/api/prompt', async (req, res) => {
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-1.5-flash',
       contents: prompt,
       config: {
         systemInstruction: "Tu es CRIMSON AI, un assistant direct, précis et efficace.",
       }
     });
 
-    return res.json({ reply: response.text });
+    // Extraction sécurisée du texte
+    const replyText = response.text || (response.candidates && response.candidates[0]?.content?.parts[0]?.text) || "Pas de texte généré.";
+
+    return res.json({ reply: replyText });
   } catch (err) {
-    console.error("Erreur Gemini:", err);
-    return res.status(500).json({ error: "Erreur lors du traitement de la réponse." });
+    console.error("Erreur Gemini backend:", err);
+    return res.status(500).json({ error: "Erreur lors du traitement par l'API." });
   }
 });
 
