@@ -28,28 +28,35 @@ Règles de comportement fondamentales :
 - Adresse-toi à lui en l'appelant reuf, Brayan ou stack's.
 `;
 
+// Liste des modèles à tester en ordre de priorité si surcharge (503)
+const MODELS = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.5-pro'];
+
 app.post('/api/prompt', async (req, res) => {
   const { prompt } = req.body;
   if (!prompt) return res.status(400).json({ error: 'Prompt requis' });
 
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
-      contents: prompt,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION
+  let lastError = null;
+
+  for (const modelName of MODELS) {
+    try {
+      const response = await ai.models.generateContent({
+        model: modelName,
+        contents: prompt,
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION
+        }
+      });
+
+      if (response && response.text) {
+        return res.json({ reply: response.text });
       }
-    });
-
-    if (response && response.text) {
-      return res.json({ reply: response.text });
+    } catch (e) {
+      console.error(`Échec sur ${modelName}:`, e.message);
+      lastError = e.message;
     }
-
-    res.status(500).json({ reply: "Aucune réponse générée par l'IA." });
-  } catch (e) {
-    console.error("Erreur Gemini:", e.message);
-    res.status(500).json({ reply: "Erreur Gemini API: " + e.message });
   }
+
+  res.status(500).json({ reply: "Surcharge temporaire des serveurs Gemini. Réessaie dans un instant." });
 });
 
 const PORT = process.env.PORT || 3000;
