@@ -1,11 +1,13 @@
 const express = require('express');
-const { GoogleGenAI } = require('@google/genai');
+const OpenAI = require('openai');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Utilise ta clé API Gemini stockée dans l'environnement (GEMINI_API_KEY)
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// Utilise la clé API OpenAI stockée dans la variable d'environnement OPENAI_API_KEY
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 app.use(express.json());
 app.use(express.static('public'));
@@ -51,25 +53,28 @@ app.post('/api/prompt', async (req, res) => {
     });
   }
 
-  // Traitement du texte via Gemini API
+  // Traitement du texte via l'API OpenAI
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        systemInstruction: "Tu es CRIMSON AI, un assistant direct, précis et efficace.",
-      }
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: 'Tu es CRIMSON AI, un assistant direct, logique, rigoureux et sans détours.' },
+        { role: 'user', content: prompt }
+      ],
+      max_tokens: 500,
     });
+
+    const replyText = completion.choices[0]?.message?.content || "Aucune réponse générée.";
 
     return res.json({
       type: 'text',
-      reply: response.text
+      reply: replyText
     });
   } catch (err) {
-    console.error("Erreur Gemini:", err);
+    console.error("Erreur OpenAI:", err?.response?.data || err.message);
     return res.status(500).json({
       type: 'text',
-      reply: "Erreur lors du traitement de la réponse texte."
+      reply: "Erreur lors du traitement de la réponse texte avec OpenAI."
     });
   }
 });
