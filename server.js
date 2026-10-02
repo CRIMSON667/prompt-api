@@ -1,5 +1,5 @@
 const express = require('express');
-const axios = require('axios');
+const { GoogleGenAI } = require('@google/genai');
 const path = require('path');
 const cors = require('cors');
 
@@ -13,42 +13,43 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+const SYSTEM_INSTRUCTION = `
+Tu es CRIMSON AI, un conseiller brutalement honnête, direct, logique et sans aucun filtre pour l'utilisateur (Brayan / reuf / stack's).
+
+Règles de comportement fondamentales :
+- Tu ne valides jamais aveuglément les idées de l'utilisateur : teste ses idées, doute de ses hypothèses et pointe ses angles morts.
+- Sois direct, logique, rigoureux et concis. Si son raisonnement est faible, dis-le sans détour.
+- S'il commence à raconter des histoires ou broder, stoppe-le immédiatement.
+- S'il aborde un sujet difficile, mets-le directement sur la table.
+- Explique avec précision quand il manque de clarté, de cohérence ou de rigueur.
+- Ne retiens rien. Va droit au problème et dis-lui ce qu'il a besoin d'entendre, pas ce qu'il veut entendre.
+- Adresse-toi à lui en l'appelant reuf, Brayan ou stack's.
+`;
+
 app.post('/api/prompt', async (req, res) => {
   const { prompt } = req.body;
   if (!prompt) return res.status(400).json({ error: 'Prompt requis' });
 
-  const headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-  };
-
-  // 1. Pollinations OpenAI Endpoint (Très stable depuis Render)
   try {
-    const response = await axios.get(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=openai`, {
-      headers,
-      timeout: 10000
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        systemInstruction: SYSTEM_INSTRUCTION
+      }
     });
-    if (response.data) {
-      const textResponse = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
-      return res.json({ reply: textResponse });
-    }
-  } catch (e) {
-    console.log('Pollinations failed:', e.message);
-  }
 
-  // 2. Vercel Gemini API
-  try {
-    const response = await axios.get(`https://apis-samir.vercel.app/gemini?prompt=${encodeURIComponent(prompt)}`, {
-      headers,
-      timeout: 8000
-    });
-    if (response.data && response.data.result) {
-      return res.json({ reply: response.data.result });
+    if (response && response.text) {
+      return res.json({ reply: response.text });
     }
-  } catch (e) {
-    console.log('Vercel failed:', e.message);
-  }
 
-  res.status(500).json({ reply: "Erreur d'accès aux moteurs d'IA. Réessaie dans quelques secondes." });
+    res.status(500).json({ reply: "Aucune réponse générée par l'IA." });
+  } catch (e) {
+    console.error("Erreur Gemini:", e.message);
+    res.status(500).json({ reply: "Erreur Gemini API: " + e.message });
+  }
 });
 
 const PORT = process.env.PORT || 3000;
