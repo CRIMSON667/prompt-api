@@ -24,7 +24,7 @@
     .close-btn { background: none; border: none; color: #888; font-size: 1.2rem; cursor: pointer; }
 
     .menu-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; }
-    .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; color: #ddd; font-size: 0.9rem; cursor: pointer; text-decoration: none; }
+    .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; color: #ddd; font-size: 0.9rem; cursor: pointer; }
     .menu-item:active { background: #1a1a1a; }
     .menu-icon { font-size: 1.1rem; width: 20px; text-align: center; color: #aaa; }
 
@@ -32,7 +32,6 @@
 
     .recents-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
     .recent-item { padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
-    .recent-item:active { background: #1a1a1a; }
 
     .sidebar-footer { border-top: 1px solid #1f1f1f; padding-top: 12px; margin-top: auto; display: flex; align-items: center; justify-content: space-between; }
     .user-profile { display: flex; align-items: center; gap: 10px; }
@@ -44,7 +43,7 @@
     .msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 0.92rem; line-height: 1.4; word-wrap: break-word; }
     .user { align-self: flex-end; background: #990000; color: #fff; border-bottom-right-radius: 2px; }
     .bot { align-self: flex-start; background: #141414; border: 1px solid #2a0808; color: #ddd; border-bottom-left-radius: 2px; }
-    .bot img { max-width: 100%; border-radius: 8px; margin-top: 8px; display: block; border: 1px solid #333; }
+    .bot-img { width: 100%; border-radius: 8px; margin-top: 8px; display: block; border: 1px solid #330000; }
 
     #input-area { background: #0f0203; padding: 10px; border-top: 1px solid #220000; display: flex; gap: 8px; align-items: center; flex-shrink: 0; position: relative; }
     .attach-btn { background: #1a0506; border: 1px solid #4a0000; color: #ff1e27; font-size: 1.2rem; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
@@ -56,10 +55,6 @@
     .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; text-align: center; }
     .action-item { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 0.72rem; color: #aaa; cursor: pointer; }
     .action-icon { width: 50px; height: 50px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: #fff; }
-    .action-list { display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #222; padding-top: 12px; }
-    .list-item { display: flex; align-items: center; gap: 12px; color: #ddd; font-size: 0.88rem; cursor: pointer; }
-    .list-item-icon { font-size: 1.2rem; color: #ff1e27; width: 24px; text-align: center; }
-    .list-item-text span { display: block; font-size: 0.7rem; color: #666; }
   </style>
 </head>
 <body>
@@ -80,9 +75,7 @@
     </div>
 
     <div class="section-title">Récents</div>
-    <div class="recents-list" id="recents-container">
-      <!-- Généré dynamiquement selon l'activité de la session -->
-    </div>
+    <div class="recents-list" id="recents-container"></div>
 
     <div class="sidebar-footer">
       <div class="user-profile">
@@ -99,13 +92,13 @@
   </header>
 
   <div id="chat-box">
-    <div class="msg bot">Session prête. Envoie ton prompt ou ta commande.</div>
+    <div class="msg bot">Session prête. Entre ta demande.</div>
   </div>
 
   <div id="action-drawer">
     <div class="action-grid">
-      <div class="action-item" onclick="selectAction('Image')"><div class="action-icon">🖼️</div><span>Image</span></div>
-      <div class="action-item" onclick="selectAction('Fichiers')"><div class="action-icon">📎</div><span>Fichiers</span></div>
+      <div class="action-item" onclick="selectAction('Imagine ')"><div class="action-icon">🖼️</div><span>Image</span></div>
+      <div class="action-item" onclick="selectAction('Fichier ')"><div class="action-icon">📎</div><span>Fichiers</span></div>
     </div>
   </div>
 
@@ -116,44 +109,36 @@
   </div>
 
   <script>
-    const conversationHistory = [];
     const recentTopics = [];
 
     function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const overlay = document.getElementById('sidebar-overlay');
-      if (sidebar && overlay) {
-        sidebar.classList.toggle('active');
-        overlay.classList.toggle('active');
-      }
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('sidebar-overlay').classList.toggle('active');
     }
 
     function toggleDrawer() {
-      const drawer = document.getElementById('action-drawer');
-      if (drawer) {
-        drawer.classList.toggle('active');
-      }
+      document.getElementById('action-drawer').classList.toggle('active');
     }
 
-    function selectAction(name) {
+    function selectAction(cmd) {
       const input = document.getElementById('prompt-input');
-      input.value = '/image ';
+      input.value = cmd;
       toggleDrawer();
       input.focus();
     }
 
     function newChat() {
-      const chatBox = document.getElementById('chat-box');
-      chatBox.innerHTML = '<div class="msg bot">Nouvelle session lancée.</div>';
-      conversationHistory.length = 0;
+      document.getElementById('chat-box').innerHTML = '<div class="msg bot">Nouvelle session.</div>';
       toggleSidebar();
     }
 
     function updateRecents(topic) {
-      recentTopics.unshift(topic);
+      if (!recentTopics.includes(topic)) {
+        recentTopics.unshift(topic);
+      }
       const container = document.getElementById('recents-container');
       container.innerHTML = '';
-      recentTopics.slice(0, 10).forEach(t => {
+      recentTopics.slice(0, 8).forEach(t => {
         const item = document.createElement('div');
         item.className = 'recent-item';
         item.textContent = t;
@@ -176,52 +161,48 @@
       chatBox.appendChild(userMsg);
       input.value = '';
 
-      if (recentTopics.length === 0 || recentTopics[0] !== text) {
-        updateRecents(text);
-      }
-
-      conversationHistory.push({ sender: 'user', text: text });
+      updateRecents(text);
 
       const botMsg = document.createElement('div');
       botMsg.className = 'msg bot';
-      botMsg.textContent = "Génération / Traitement en cours...";
+      botMsg.textContent = "Génération en cours...";
       chatBox.appendChild(botMsg);
       chatBox.scrollTop = chatBox.scrollHeight;
-
-      // Si c'est une demande d'image
-      if (text.toLowerCase().startsWith('/image') || text.toLowerCase().includes('génère une image')) {
-        const promptText = text.replace(/\/image/i, '').trim();
-        const cleanPrompt = encodeURIComponent(promptText || 'cyberpunk dark background');
-        // Ajout d'un timestamp unique pour contourner le cache Pollinations
-        const cacheBuster = Date.now();
-        const imageUrl = `https://pollinations.ai/p/${cleanPrompt}?width=512&height=512&seed=${cacheBuster}&nologo=true`;
-
-        const img = document.createElement('img');
-        img.src = imageUrl;
-        img.alt = promptText;
-        img.onerror = () => {
-          botMsg.textContent = "Erreur de chargement de l'image (limite de débit Pollinations). Réessaie dans quelques secondes.";
-        };
-        img.onload = () => {
-          botMsg.textContent = `Image générée pour : "${promptText}"`;
-          botMsg.appendChild(img);
-          chatBox.scrollTop = chatBox.scrollHeight;
-        };
-        return;
-      }
 
       try {
         const res = await fetch('/api/prompt', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: text, history: conversationHistory })
+          body: JSON.stringify({ prompt: text })
         });
         const data = await res.json();
 
         botMsg.textContent = data.reply || "Aucune réponse.";
-        conversationHistory.push({ sender: 'bot', text: data.reply });
+
+        if (data.type === 'image' && data.url) {
+          const imgContainer = document.createElement('div');
+          imgContainer.style.marginTop = '10px';
+          imgContainer.innerHTML = `<span style="font-size:0.8rem; color:#888;">Génération de l'image...</span>`;
+          botMsg.appendChild(imgContainer);
+
+          const img = document.createElement('img');
+          img.className = 'bot-img';
+          img.src = data.url;
+          img.alt = "Image générée";
+
+          img.onload = () => {
+            imgContainer.innerHTML = '';
+            imgContainer.appendChild(img);
+            chatBox.scrollTop = chatBox.scrollHeight;
+          };
+
+          img.onerror = () => {
+            imgContainer.innerHTML = `<span style="color:#ff4d4d; font-size:0.8rem;">❌ Erreur Pollinations. Réessaie.</span>`;
+          };
+        }
+
       } catch (err) {
-        botMsg.textContent = "Erreur de connexion serveur.";
+        botMsg.textContent = "Erreur réseau avec le serveur.";
       }
       chatBox.scrollTop = chatBox.scrollHeight;
     }
