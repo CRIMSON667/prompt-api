@@ -49,14 +49,19 @@ app.post('/api/prompt', async (req, res) => {
 
     // 1. Génération d'image ultra-fiable via Pollinations
     if (isImageGenerationQuery) {
-      const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
+      // Nettoyage du prompt pour l'URL
+      const formattedPrompt = encodeURIComponent(prompt.trim());
+      // Seed unique et timestamp pour éviter les blocages de cache Pollinations
+      const randomSeed = Math.floor(Math.random() * 999999);
+      const imageUrl = `https://image.pollinations.ai/prompt/${formattedPrompt}?width=800&height=800&nologo=true&seed=${randomSeed}`;
+
       return res.json({
         reply: "Visuel généré :",
         imageUrl: imageUrl
       });
     }
 
-    // 2. Traitement d'une image transmise
+    // 2. Traitement d'une image transmise par l'utilisateur
     if (image) {
       if (prompt) {
         try {
