@@ -1,5 +1,5 @@
 const express = require('express');
-const { GoogleGenAI } = require('@google/genai');
+const axios = require('axios');
 const path = require('path');
 const cors = require('cors');
 
@@ -12,8 +12,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const SYSTEM_INSTRUCTION = `
 Tu es CRIMSON AI, un conseiller brutalement honnête, direct, logique et sans aucun filtre pour l'utilisateur (Brayan / reuf / stack's).
@@ -28,31 +26,27 @@ Règles de comportement fondamentales :
 - Adresse-toi à lui en l'appelant reuf, Brayan ou stack's.
 `;
 
-const MODELS = ['gemini-1.5-flash', 'gemini-1.5-pro'];
-
 app.post('/api/prompt', async (req, res) => {
   const { prompt } = req.body;
   if (!prompt) return res.status(400).json({ error: 'Prompt requis' });
 
-  for (const modelName of MODELS) {
-    try {
-      const response = await ai.models.generateContent({
-        model: modelName,
-        contents: prompt,
-        config: {
-          systemInstruction: SYSTEM_INSTRUCTION
-        }
-      });
+  const fullPrompt = `${SYSTEM_INSTRUCTION}\n\nUser: ${prompt}`;
 
-      if (response && response.text) {
-        return res.json({ reply: response.text });
-      }
-    } catch (e) {
-      console.error(`Échec modèle ${modelName}:`, e.message);
+  try {
+    const apiUrl = `https://sonic-gpt.vercel.app/api/gpt?prompt=${encodeURIComponent(fullPrompt)}`;
+    const response = await axios.get(apiUrl, { timeout: 20000 });
+
+    if (response.data) {
+      const replyText = response.data.result || response.data.reply || response.data.message || response.data.response || response.data.data;
+      if (replyText) return res.json({ reply: replyText });
+      if (typeof response.data === 'string') return res.json({ reply: response.data });
     }
-  }
 
-  res.status(500).json({ reply: "Erreur lors de la réponse. Vérifie la clé GEMINI_API_KEY sur Render." });
+    res.status(500).json({ reply: "Format de réponse inconnu de l'API Sonic-GPT." });
+  } catch (e) {
+    console.error("Sonic-GPT API error:", e.message);
+    res.status(500).json({ reply: "Erreur lors de la connexion à Sonic-GPT: " + e.message });
+  }
 });
 
 const PORT = process.env.PORT || 3000;
