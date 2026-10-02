@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CRIMSON AI</title>
+  
+  <!-- Configuration PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#dc143c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
   <style>
     * {
       box-sizing: border-box;
@@ -20,7 +27,7 @@
       overflow: hidden;
     }
 
-    /* Écran d'animation d'entrée avec Robot */
+    /* Écran d'animation futuriste */
     #splash-screen {
       position: fixed;
       top: 0;
@@ -33,42 +40,78 @@
       justify-content: center;
       align-items: center;
       z-index: 9999;
-      animation: fadeOutSplash 1s forwards 2.6s;
+      animation: fadeOutSplash 1s forwards 3s;
     }
 
-    .robot-avatar {
-      width: 100px;
-      height: 100px;
-      margin-bottom: 15px;
-      filter: drop-shadow(0 0 15px rgba(220, 20, 60, 0.8));
-      animation: floatRobot 2s ease-in-out infinite alternate;
+    .orb-container {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 25px;
     }
 
-    @keyframes floatRobot {
-      from { transform: translateY(0px) scale(0.98); }
-      to { transform: translateY(-10px) scale(1.02); }
+    .orb-core {
+      width: 50px;
+      height: 50px;
+      background: radial-gradient(circle, #ff1a40 0%, #8b0000 70%, #000 100%);
+      border-radius: 50%;
+      box-shadow: 0 0 35px #dc143c, inset 0 0 15px #ff4d6d;
+      animation: pulseCore 1.5s ease-in-out infinite alternate;
+    }
+
+    .orb-ring {
+      position: absolute;
+      width: 90px;
+      height: 90px;
+      border: 2px solid transparent;
+      border-top-color: #dc143c;
+      border-right-color: rgba(220, 20, 60, 0.3);
+      border-radius: 50%;
+      animation: rotateRing 2s linear infinite;
+    }
+
+    .orb-ring-outer {
+      position: absolute;
+      width: 115px;
+      height: 115px;
+      border: 1px dashed rgba(220, 20, 60, 0.6);
+      border-radius: 50%;
+      animation: rotateRingReverse 4s linear infinite;
+    }
+
+    @keyframes pulseCore {
+      from { transform: scale(0.9); box-shadow: 0 0 20px #dc143c; }
+      to { transform: scale(1.1); box-shadow: 0 0 45px #ff1a40, 0 0 10px #ffffff; }
+    }
+
+    @keyframes rotateRing {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes rotateRingReverse {
+      from { transform: rotate(360deg); }
+      to { transform: rotate(0deg); }
     }
 
     .splash-title {
       font-size: 2.2rem;
       font-weight: 900;
       color: #dc143c;
-      letter-spacing: 5px;
+      letter-spacing: 6px;
       text-transform: uppercase;
-      text-shadow: 0 0 20px rgba(220, 20, 60, 0.8);
-      animation: pulseGlow 1.2s infinite alternate;
+      text-shadow: 0 0 25px rgba(220, 20, 60, 0.9);
     }
 
     .splash-sub {
       margin-top: 10px;
-      font-size: 0.8rem;
-      color: #666;
-      letter-spacing: 3px;
-    }
-
-    @keyframes pulseGlow {
-      from { transform: scale(0.98); opacity: 0.8; }
-      to { transform: scale(1.03); opacity: 1; text-shadow: 0 0 30px rgba(220, 20, 60, 1); }
+      font-size: 0.75rem;
+      color: #888;
+      letter-spacing: 4px;
+      text-transform: uppercase;
     }
 
     @keyframes fadeOutSplash {
@@ -85,7 +128,7 @@
     }
 
     header {
-      background: linear-gradient(180deg, #120303 0%, #050505 100%);
+      background: linear-gradient(180deg, #150303 0%, #050505 100%);
       padding: 14px 18px;
       text-align: center;
       border-bottom: 1px solid #2a0808;
@@ -114,7 +157,7 @@
       padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
       scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
     }
@@ -124,7 +167,7 @@
       padding: 12px 16px;
       border-radius: 12px;
       font-size: 0.92rem;
-      line-height: 1.45;
+      line-height: 1.5;
       word-wrap: break-word;
       animation: slideIn 0.2s ease-out;
     }
@@ -144,11 +187,18 @@
 
     .ai {
       align-self: flex-start;
-      background-color: #121212;
+      background-color: #111111;
       color: #e0e0e0;
       border: 1px solid #262626;
       border-left: 3px solid #dc143c;
       border-bottom-left-radius: 2px;
+    }
+
+    .ai img, .user img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 8px;
+      border: 1px solid #333;
     }
 
     .error-msg {
@@ -160,9 +210,8 @@
       border-radius: 8px;
     }
 
-    /* Zone de Saisie Fixe */
     #input-container {
-      padding: 12px 14px;
+      padding: 10px 12px;
       background-color: #0d0d0d;
       border-top: 1px solid #222;
       display: flex;
@@ -181,7 +230,7 @@
       border-radius: 20px;
       padding: 12px 16px;
       color: #fff;
-      font-size: 1rem;
+      font-size: 0.95rem;
       outline: none;
       transition: border-color 0.2s;
       -webkit-appearance: none;
@@ -191,7 +240,26 @@
       border-color: #dc143c;
     }
 
-    button {
+    .file-btn {
+      background: #1c1c1c;
+      border: 1px solid #333;
+      color: #aaa;
+      padding: 10px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      flex-shrink: 0;
+    }
+
+    .file-btn:active {
+      background: #2a2a2a;
+    }
+
+    button.send-btn {
       background: linear-gradient(135deg, #8b0000 0%, #dc143c 100%);
       color: white;
       border: none;
@@ -205,13 +273,34 @@
       flex-shrink: 0;
     }
 
-    button:active {
+    button.send-btn:active {
       transform: scale(0.95);
     }
 
     button:disabled {
       opacity: 0.4;
       cursor: not-allowed;
+    }
+
+    #preview-container {
+      display: none;
+      padding: 6px 12px;
+      background: #0d0d0d;
+      border-top: 1px solid #1f1f1f;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #preview-img {
+      height: 40px;
+      border-radius: 6px;
+      border: 1px solid #dc143c;
+    }
+
+    .remove-img {
+      color: #ff4d4d;
+      font-size: 0.8rem;
+      cursor: pointer;
     }
 
     #chat-container::-webkit-scrollbar {
@@ -226,57 +315,104 @@
 </head>
 <body>
 
-  <!-- Écran d'Entrée avec Robot Cyberpunk -->
   <div id="splash-screen">
-    <svg class="robot-avatar" viewBox="0 0 24 24" fill="none" stroke="#dc143c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="11" width="18" height="10" rx="2" />
-      <circle cx="12" cy="5" r="2" />
-      <path d="M12 7v4" />
-      <line x1="8" y1="15" x2="8" y2="15.01" stroke-width="3" />
-      <line x1="16" y1="15" x2="16" y2="15.01" stroke-width="3" />
-      <path d="M9 18h6" />
-    </svg>
+    <div class="orb-container">
+      <div class="orb-ring-outer"></div>
+      <div class="orb-ring"></div>
+      <div class="orb-core"></div>
+    </div>
     <div class="splash-title">CRIMSON AI</div>
-    <div class="splash-sub">INITIALISATION DU SYSTEME...</div>
+    <div class="splash-sub">CONNEXION NEURONALE...</div>
   </div>
 
   <div id="app-container">
     <header>
       <h1>CRIMSON AI</h1>
-      <p>CONSEILLER TACTIQUE // NON FILTRÉ</p>
+      <p>CONSEILLER TACTIQUE // GENERATEUR & ANALYSTE</p>
     </header>
 
     <div id="chat-container">
       <div class="message ai">Montre-moi ce que tu vaux, Brayan. Ne me fais pas perdre mon temps.</div>
     </div>
 
+    <div id="preview-container">
+      <img id="preview-img" src="" alt="Aperçu">
+      <span class="remove-img" onclick="clearImage()">✕ Supprimer</span>
+    </div>
+
     <div id="input-container">
-      <input type="text" id="prompt" placeholder="Pose ta question..." autocomplete="off" onkeydown="if(event.key==='Enter') sendPrompt()">
-      <button id="send-btn" onclick="sendPrompt()">Envoyer</button>
+      <label class="file-btn" for="image-input">
+        📷
+      </label>
+      <input type="file" id="image-input" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
+      
+      <input type="text" id="prompt" placeholder="Message ou demande d'image..." autocomplete="off" onkeydown="if(event.key==='Enter') sendPrompt()">
+      <button class="send-btn" id="send-btn" onclick="sendPrompt()">Envoyer</button>
     </div>
   </div>
 
   <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js');
+      });
+    }
+
+    let selectedImageBase64 = null;
+
+    function handleImageSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        selectedImageBase64 = e.target.result;
+        document.getElementById('preview-img').src = selectedImageBase64;
+        document.getElementById('preview-container').style.display = 'flex';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearImage() {
+      selectedImageBase64 = null;
+      document.getElementById('image-input').value = '';
+      document.getElementById('preview-container').style.display = 'none';
+    }
+
     async function sendPrompt() {
       const input = document.getElementById('prompt');
       const btn = document.getElementById('send-btn');
       const chat = document.getElementById('chat-container');
       const text = input.value.trim();
 
-      if (!text) return;
+      if (!text && !selectedImageBase64) return;
 
       const userDiv = document.createElement('div');
       userDiv.className = 'message user';
-      userDiv.textContent = text;
+      
+      if (text) {
+        const p = document.createElement('p');
+        p.textContent = text;
+        userDiv.appendChild(p);
+      }
+
+      if (selectedImageBase64) {
+        const img = document.createElement('img');
+        img.src = selectedImageBase64;
+        userDiv.appendChild(img);
+      }
+
       chat.appendChild(userDiv);
 
+      const currentImage = selectedImageBase64;
       input.value = '';
+      clearImage();
       btn.disabled = true;
       chat.scrollTop = chat.scrollHeight;
 
       const loadingDiv = document.createElement('div');
       loadingDiv.className = 'message ai';
-      loadingDiv.textContent = 'Analyse en cours...';
+      loadingDiv.textContent = 'Traitement tactique en cours...';
       chat.appendChild(loadingDiv);
       chat.scrollTop = chat.scrollHeight;
 
@@ -284,11 +420,27 @@
         const res = await fetch('/api/prompt', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: text })
+          body: JSON.stringify({ prompt: text, image: currentImage })
         });
         const data = await res.json();
         
-        loadingDiv.textContent = data.reply || "Tch. Aucune donnée exploitable.";
+        loadingDiv.innerHTML = '';
+
+        if (data.reply) {
+          const textNode = document.createElement('div');
+          textNode.innerHTML = data.reply.replace(/\n/g, '<br>');
+          loadingDiv.appendChild(textNode);
+        }
+
+        if (data.imageUrl) {
+          const generatedImg = document.createElement('img');
+          generatedImg.src = data.imageUrl;
+          loadingDiv.appendChild(generatedImg);
+        }
+
+        if (!data.reply && !data.imageUrl) {
+          loadingDiv.textContent = "Tch. Aucune donnée exploitable.";
+        }
       } catch (err) {
         loadingDiv.className = 'message error-msg';
         loadingDiv.textContent = "Erreur système. Connexion interrompue.";

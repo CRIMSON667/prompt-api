@@ -1,17 +1,23 @@
 {
+  "name": "CRIMSON AI",
   "short_name": "CRIMSON",
-  "name": "CRIMSON AI - Tactical Assistant",
+  "description": "Conseiller tactique et générateur d'images AI",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#dc143c",
+  "orientation": "portrait",
   "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/8642/8642347.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
     {
       "src": "https://cdn-icons-png.flaticon.com/512/8642/8642347.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ],
-  "start_url": "/",
-  "background_color": "#050505",
-  "theme_color": "#dc143c",
-  "display": "standalone",
-  "orientation": "portrait"
+  ]
 }
