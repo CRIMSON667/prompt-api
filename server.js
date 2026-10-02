@@ -31,31 +31,62 @@ app.post('/api/prompt', async (req, res) => {
   }
 
   try {
+    const cleanPrompt = (prompt || '').toLowerCase().trim();
+    
+    // Détection exhaustive de toutes les intentions de génération d'image
     const isImageGenerationQuery = prompt && (
-      prompt.toLowerCase().includes('crée une photo') ||
-      prompt.toLowerCase().includes('génère une image') ||
-      prompt.toLowerCase().includes('crée la photo') ||
-      prompt.toLowerCase().includes('dessine') ||
-      prompt.toLowerCase().includes('imagine une photo') ||
-      prompt.toLowerCase().includes('generate image') ||
-      prompt.toLowerCase().startsWith('photo de')
+      cleanPrompt.includes('génère') ||
+      cleanPrompt.includes('genere') ||
+      cleanPrompt.includes('généré') ||
+      cleanPrompt.includes('genere-moi') ||
+      cleanPrompt.includes('génère-moi') ||
+      cleanPrompt.includes('génération') ||
+      cleanPrompt.includes('crée') ||
+      cleanPrompt.includes('cree') ||
+      cleanPrompt.includes('créer') ||
+      cleanPrompt.includes('crée-moi') ||
+      cleanPrompt.includes('dessine') ||
+      cleanPrompt.includes('dessin') ||
+      cleanPrompt.includes('fais-moi une image') ||
+      cleanPrompt.includes('fait une image') ||
+      cleanPrompt.includes('fais une photo') ||
+      cleanPrompt.includes('fait une photo') ||
+      cleanPrompt.includes('fais un dessin') ||
+      cleanPrompt.includes('imagine') ||
+      cleanPrompt.includes('illustre') ||
+      cleanPrompt.includes('montre-moi') ||
+      cleanPrompt.includes('montre moi') ||
+      cleanPrompt.includes('visuel de') ||
+      cleanPrompt.includes('generate') ||
+      cleanPrompt.includes('create an image') ||
+      cleanPrompt.includes('draw') ||
+      cleanPrompt.startsWith('photo de') ||
+      cleanPrompt.startsWith('photo d\'') ||
+      cleanPrompt.startsWith('image de') ||
+      cleanPrompt.startsWith('image d\'') ||
+      cleanPrompt.startsWith('un dessin de') ||
+      cleanPrompt.startsWith('une illustration de')
     ) && !image;
 
     // 1. Génération d'une nouvelle image
     if (isImageGenerationQuery) {
       try {
-        const imgRes = await axios.post(CUSTOM_IMAGE_GEN_API, { prompt: prompt }, { timeout: 30000 });
-        const imageUrl = imgRes.data.imageUrl || imgRes.data.url || imgRes.data.image || imgRes.data;
+        const imgRes = await axios.post(CUSTOM_IMAGE_GEN_API, { prompt: prompt }, { timeout: 15000 });
+        const imageUrl = imgRes.data?.imageUrl || imgRes.data?.url || imgRes.data?.image || imgRes.data;
 
-        return res.json({
-          reply: "Visuel généré.",
-          imageUrl: typeof imageUrl === 'string' ? imageUrl : JSON.stringify(imageUrl)
-        });
+        if (imageUrl && typeof imageUrl === 'string') {
+          return res.json({
+            reply: "Visuel généré.",
+            imageUrl: imageUrl
+          });
+        } else {
+          throw new Error("Format d'image invalide");
+        }
       } catch (imgErr) {
-        console.error("Erreur API Génération Image:", imgErr.message);
+        console.error("Moteur principal indisponible, bascule sur Pollinations:", imgErr.message);
         const fallbackUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true`;
         return res.json({
-          reply: "Génération (Moteur Secours) :",
+          reply: "Visuel généré :",
           imageUrl: fallbackUrl
         });
       }
