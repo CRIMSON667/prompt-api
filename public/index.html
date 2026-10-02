@@ -9,12 +9,10 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: #050505; color: #e0e0e0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
     
-    /* Header */
     header { background: #0f0203; border-bottom: 1px solid #330000; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
     .menu-btn { background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; padding: 4px; }
     header h1 { color: #ff1e27; font-size: 1rem; letter-spacing: 1px; text-transform: uppercase; font-weight: 800; }
 
-    /* Overlay & Sidebar */
     #sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; }
     #sidebar-overlay.active { display: block; }
     
@@ -27,7 +25,7 @@
 
     .menu-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; }
     .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; color: #ddd; font-size: 0.9rem; cursor: pointer; text-decoration: none; }
-    .menu-item:active, .menu-item.active { background: #1a1a1a; }
+    .menu-item:active { background: #1a1a1a; }
     .menu-icon { font-size: 1.1rem; width: 20px; text-align: center; color: #aaa; }
 
     .section-title { font-size: 0.75rem; color: #666; text-transform: uppercase; font-weight: bold; margin: 12px 12px 6px; }
@@ -40,16 +38,14 @@
     .user-profile { display: flex; align-items: center; gap: 10px; }
     .avatar { width: 32px; height: 32px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #ff1e27; border: 1px solid #ff1e27; font-size: 0.8rem; }
     .user-name { font-size: 0.88rem; font-weight: 600; color: #eee; }
-    .settings-btn { background: none; border: none; color: #888; font-size: 1.1rem; cursor: pointer; }
 
-    /* Zone Chat */
     #chat-box { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; }
 
     .msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 0.92rem; line-height: 1.4; word-wrap: break-word; }
     .user { align-self: flex-end; background: #990000; color: #fff; border-bottom-right-radius: 2px; }
     .bot { align-self: flex-start; background: #141414; border: 1px solid #2a0808; color: #ddd; border-bottom-left-radius: 2px; }
+    .bot img { max-width: 100%; border-radius: 8px; margin-top: 8px; display: block; border: 1px solid #333; }
 
-    /* Zone Saisie & Drawer Options */
     #input-area { background: #0f0203; padding: 10px; border-top: 1px solid #220000; display: flex; gap: 8px; align-items: center; flex-shrink: 0; position: relative; }
     .attach-btn { background: #1a0506; border: 1px solid #4a0000; color: #ff1e27; font-size: 1.2rem; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
     #prompt-input { flex: 1; background: #121212; border: 1px solid #330000; border-radius: 20px; padding: 10px 14px; color: #fff; outline: none; font-size: 0.9rem; }
@@ -68,10 +64,8 @@
 </head>
 <body>
 
-  <!-- Sidebar Overlay -->
   <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-  <!-- Sidebar Menu -->
   <div id="sidebar">
     <div class="sidebar-header">
       <span class="sidebar-title">CRIMSON</span>
@@ -83,39 +77,11 @@
         <span class="menu-icon">✏️</span>
         <span>Nouvelle discussion</span>
       </div>
-      <div class="menu-item">
-        <span class="menu-icon">🔍</span>
-        <span>Rechercher</span>
-      </div>
-      <div class="menu-item">
-        <span class="menu-icon">🎓</span>
-        <span>Étudiants</span>
-      </div>
-      <div class="menu-item">
-        <span class="menu-icon">🖼️</span>
-        <span>Images</span>
-      </div>
-      <div class="menu-item">
-        <span class="menu-icon">📚</span>
-        <span>Bibliothèque</span>
-      </div>
-    </div>
-
-    <div class="section-title">Notebooks</div>
-    <div class="menu-list">
-      <div class="menu-item">
-        <span class="menu-icon">+</span>
-        <span>Nouveau notebook</span>
-      </div>
     </div>
 
     <div class="section-title">Récents</div>
     <div class="recents-list" id="recents-container">
-      <div class="recent-item">Extraction des API du Bot</div>
-      <div class="recent-item">Gestion des espaces dans App Inventor</div>
-      <div class="recent-item">Correction de code Bot Messenger</div>
-      <div class="recent-item">Demande de précisions urgentes</div>
-      <div class="recent-item">Optimisation d'un code de bot</div>
+      <!-- Généré dynamiquement selon l'activité de la session -->
     </div>
 
     <div class="sidebar-footer">
@@ -123,7 +89,6 @@
         <div class="avatar">BS</div>
         <span class="user-name">Brayan Slyde</span>
       </div>
-      <button class="settings-btn">⚙️</button>
     </div>
   </div>
 
@@ -134,37 +99,25 @@
   </header>
 
   <div id="chat-box">
-    <div class="msg bot">Montre-moi ce que tu vaux, Brayan. Ne me fais pas perdre mon temps.</div>
+    <div class="msg bot">Session prête. Envoie ton prompt ou ta commande.</div>
   </div>
 
-  <!-- Tiroir Actions -->
   <div id="action-drawer">
     <div class="action-grid">
-      <div class="action-item" onclick="selectAction('Photos')"><div class="action-icon">🖼️</div><span>Photos</span></div>
-      <div class="action-item" onclick="selectAction('Appareil photo')"><div class="action-icon">📷</div><span>Appareil...</span></div>
+      <div class="action-item" onclick="selectAction('Image')"><div class="action-icon">🖼️</div><span>Image</span></div>
       <div class="action-item" onclick="selectAction('Fichiers')"><div class="action-icon">📎</div><span>Fichiers</span></div>
-      <div class="action-item" onclick="selectAction('Drive')"><div class="action-icon">☁️</div><span>Drive</span></div>
-    </div>
-    <div class="action-list">
-      <div class="list-item" onclick="selectAction('Deep Research')">
-        <div class="list-item-icon">🌐</div>
-        <div class="list-item-text">Deep Research<span>Obtenez des rapports détaillés</span></div>
-      </div>
-      <div class="list-item" onclick="selectAction('Canvas')">
-        <div class="list-item-icon">📑</div>
-        <div class="list-item-text">Canvas<span>Codez, écrivez ou créez des diapositives</span></div>
-      </div>
     </div>
   </div>
 
   <div id="input-area">
     <button class="attach-btn" onclick="toggleDrawer()">+</button>
-    <input type="text" id="prompt-input" placeholder="Message ou demande...">
+    <input type="text" id="prompt-input" placeholder="Message ou demande d'image...">
     <button id="send-btn" onclick="sendPrompt()">Envoyer</button>
   </div>
 
   <script>
     const conversationHistory = [];
+    const recentTopics = [];
 
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
@@ -184,16 +137,28 @@
 
     function selectAction(name) {
       const input = document.getElementById('prompt-input');
-      input.value = '[' + name + '] ';
+      input.value = '/image ';
       toggleDrawer();
       input.focus();
     }
 
     function newChat() {
       const chatBox = document.getElementById('chat-box');
-      chatBox.innerHTML = '<div class="msg bot">Nouvelle session lancée. De quoi sagit-il, Brayan ?</div>';
+      chatBox.innerHTML = '<div class="msg bot">Nouvelle session lancée.</div>';
       conversationHistory.length = 0;
       toggleSidebar();
+    }
+
+    function updateRecents(topic) {
+      recentTopics.unshift(topic);
+      const container = document.getElementById('recents-container');
+      container.innerHTML = '';
+      recentTopics.slice(0, 10).forEach(t => {
+        const item = document.createElement('div');
+        item.className = 'recent-item';
+        item.textContent = t;
+        container.appendChild(item);
+      });
     }
 
     async function sendPrompt() {
@@ -211,13 +176,39 @@
       chatBox.appendChild(userMsg);
       input.value = '';
 
+      if (recentTopics.length === 0 || recentTopics[0] !== text) {
+        updateRecents(text);
+      }
+
       conversationHistory.push({ sender: 'user', text: text });
 
       const botMsg = document.createElement('div');
       botMsg.className = 'msg bot';
-      botMsg.textContent = "Traitement en cours...";
+      botMsg.textContent = "Génération / Traitement en cours...";
       chatBox.appendChild(botMsg);
       chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Si c'est une demande d'image
+      if (text.toLowerCase().startsWith('/image') || text.toLowerCase().includes('génère une image')) {
+        const promptText = text.replace(/\/image/i, '').trim();
+        const cleanPrompt = encodeURIComponent(promptText || 'cyberpunk dark background');
+        // Ajout d'un timestamp unique pour contourner le cache Pollinations
+        const cacheBuster = Date.now();
+        const imageUrl = `https://pollinations.ai/p/${cleanPrompt}?width=512&height=512&seed=${cacheBuster}&nologo=true`;
+
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        img.alt = promptText;
+        img.onerror = () => {
+          botMsg.textContent = "Erreur de chargement de l'image (limite de débit Pollinations). Réessaie dans quelques secondes.";
+        };
+        img.onload = () => {
+          botMsg.textContent = `Image générée pour : "${promptText}"`;
+          botMsg.appendChild(img);
+          chatBox.scrollTop = chatBox.scrollHeight;
+        };
+        return;
+      }
 
       try {
         const res = await fetch('/api/prompt', {
@@ -230,7 +221,7 @@
         botMsg.textContent = data.reply || "Aucune réponse.";
         conversationHistory.push({ sender: 'bot', text: data.reply });
       } catch (err) {
-        botMsg.textContent = "Erreur de connexion.";
+        botMsg.textContent = "Erreur de connexion serveur.";
       }
       chatBox.scrollTop = chatBox.scrollHeight;
     }
