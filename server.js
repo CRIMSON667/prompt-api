@@ -30,26 +30,40 @@ app.post('/api/prompt', async (req, res) => {
   const { prompt } = req.body;
   if (!prompt) return res.status(400).json({ error: 'Prompt requis' });
 
+  const fullPrompt = `${SYSTEM_INSTRUCTION}\n\nUser: ${prompt}`;
+
+  // 1. Essai avec l'API Christus (Timeout 30s)
   try {
-    const fullPrompt = `${SYSTEM_INSTRUCTION}\n\nUser: ${prompt}`;
     const apiUrl = `https://christus-s-apis.vercel.app/api/na/ai/gemini?prompt=${encodeURIComponent(fullPrompt)}`;
+    const response = await axios.get(apiUrl, { timeout: 30000 });
 
-    const response = await axios.get(apiUrl, { timeout: 15000 });
-
-    if (response.data && (response.data.result || response.data.reply || response.data.message || response.data.response)) {
+    if (response.data) {
       const replyText = response.data.result || response.data.reply || response.data.message || response.data.response;
-      return res.json({ reply: replyText });
+      if (replyText) return res.json({ reply: replyText });
+      if (typeof response.data === 'string') return res.json({ reply: response.data });
     }
-
-    if (typeof response.data === 'string') {
-      return res.json({ reply: response.data });
-    }
-
-    res.status(500).json({ reply: "Réponse invalide reçue de l'API Christus." });
   } catch (e) {
-    console.error("Erreur API Christus:", e.message);
-    res.status(500).json({ reply: "Erreur lors de la connexion à l'API Christus: " + e.message });
+    console.error("Christus API failed/timeout:", e.message);
   }
+
+  // 2. Fallback rapide Pollinations si Christus est trop lent ou HS
+  try {
+    const polUrl = `https://text.pollinations.ai/${encodeURIComponent(fullPrompt)}?model=openai`;
+    const response = await axios.get(polUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      timeout: 10000
+    });
+    if (response.data) {
+      const text = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+      return res.json({ reply: text });
+    }
+  } catch (e) {
+    console.error("Pollinations fallback failed:", e.message);
+  }
+
+  res.status(500).json({ reply: "L'API Christus et le serveur de secours mettent trop de temps à répondre. Réessaie." });
 });
 
 const PORT = process.env.PORT || 3000;
