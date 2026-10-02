@@ -6,6 +6,11 @@
   <title>CRIMSON AI</title>
   <link rel="manifest" href="/manifest.json">
   <style>
+    :root {
+      --accent-color: #ff1e27;
+      --accent-glow: rgba(255, 30, 39, 0.7);
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: #050505; color: #e0e0e0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
@@ -25,10 +30,10 @@
     .splash-logo {
       font-size: 2.4rem;
       font-weight: 900;
-      color: #ff1e27;
+      color: var(--accent-color);
       letter-spacing: 5px;
       text-transform: uppercase;
-      text-shadow: 0 0 20px rgba(255, 30, 39, 0.8);
+      text-shadow: 0 0 20px var(--accent-glow);
       animation: crimsonPulse 1.8s infinite ease-in-out;
     }
 
@@ -42,14 +47,14 @@
 
     @keyframes crimsonPulse {
       0% { transform: scale(0.97); opacity: 0.8; }
-      50% { transform: scale(1.03); opacity: 1; text-shadow: 0 0 30px rgba(255, 30, 39, 1); }
+      50% { transform: scale(1.03); opacity: 1; text-shadow: 0 0 30px var(--accent-color); }
       100% { transform: scale(0.97); opacity: 0.8; }
     }
 
     /* Main UI */
     header { background: #0f0203; border-bottom: 1px solid #330000; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
     .menu-btn { background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; }
-    header h1 { color: #ff1e27; font-size: 1rem; letter-spacing: 1px; text-transform: uppercase; font-weight: 800; }
+    header h1 { color: var(--accent-color); font-size: 1rem; letter-spacing: 1px; text-transform: uppercase; font-weight: 800; text-shadow: 0 0 10px var(--accent-glow); }
 
     #sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; }
     #sidebar-overlay.active { display: block; }
@@ -67,38 +72,38 @@
     .recent-item { padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .sidebar-footer { border-top: 1px solid #1f1f1f; padding-top: 12px; margin-top: auto; display: flex; align-items: center; }
-    .avatar { width: 32px; height: 32px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #ff1e27; border: 1px solid #ff1e27; font-size: 0.8rem; margin-right: 10px; }
+    .avatar { width: 32px; height: 32px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--accent-color); border: 1px solid var(--accent-color); font-size: 0.8rem; margin-right: 10px; }
     .user-name { font-size: 0.88rem; font-weight: 600; color: #eee; }
 
     /* Chat Messages */
     #chat-box { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
 
-    .msg { max-width: 85%; padding: 12px 16px; border-radius: 14px; font-size: 0.92rem; line-height: 1.5; word-wrap: break-word; white-space: pre-wrap; transition: all 0.2s ease-in-out; }
+    .msg { max-width: 85%; padding: 12px 16px; border-radius: 14px; font-size: 0.92rem; line-height: 1.5; word-wrap: break-word; white-space: pre-wrap; }
     .user { align-self: flex-end; background: #990000; color: #fff; border-bottom-right-radius: 2px; }
     .bot { align-self: flex-start; background: #121212; border: 1px solid #2a0808; color: #e0e0e0; border-bottom-left-radius: 2px; }
 
     .chat-img-preview { max-width: 100%; max-height: 200px; border-radius: 8px; margin-bottom: 8px; display: block; object-fit: cover; }
 
-    /* Preview section before sending */
+    /* Preview section */
     #preview-area { display: none; padding: 8px 14px; background: #0f0203; border-top: 1px solid #220000; align-items: center; gap: 10px; }
-    #preview-thumb { width: 42px; height: 42px; border-radius: 6px; object-fit: cover; border: 1px solid #ff1e27; }
-    #remove-img-btn { background: none; border: none; color: #ff1e27; font-weight: bold; cursor: pointer; font-size: 1rem; margin-left: auto; }
+    #preview-thumb { width: 42px; height: 42px; border-radius: 6px; object-fit: cover; border: 1px solid var(--accent-color); }
+    #remove-img-btn { background: none; border: none; color: var(--accent-color); font-weight: bold; cursor: pointer; font-size: 1rem; margin-left: auto; }
 
     /* Input area */
     #input-area { background: #0f0203; padding: 10px 12px; border-top: 1px solid #220000; display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
-    #file-btn { background: none; border: none; color: #aaa; font-size: 1.3rem; cursor: pointer; padding: 0 6px; }
-    #file-btn:active { color: #ff1e27; }
+    .action-btn { background: none; border: none; color: #aaa; font-size: 1.2rem; cursor: pointer; padding: 0 4px; }
+    .action-btn:active { color: var(--accent-color); }
     #prompt-input { flex: 1; background: #121212; border: 1px solid #330000; border-radius: 20px; padding: 10px 16px; color: #fff; outline: none; font-size: 0.92rem; }
-    #prompt-input:focus { border-color: #ff1e27; }
+    #prompt-input:focus { border-color: var(--accent-color); }
     #send-btn { background: #cc0000; color: #fff; border: none; padding: 10px 18px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; cursor: pointer; }
-    #send-btn:active { background: #ff1e27; }
+    #send-btn:active { background: var(--accent-color); }
   </style>
 </head>
 <body>
 
   <div id="splash-screen">
     <div class="splash-logo">CRIMSON AI</div>
-    <div class="splash-sub">Initialisation du système...</div>
+    <div class="splash-sub" id="splash-color-text">Initialisation...</div>
   </div>
 
   <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
@@ -126,23 +131,39 @@
   </header>
 
   <div id="chat-box">
-    <div class="msg bot">CRIMSON AI est opérationnel. Que faisons-nous ?</div>
+    <div class="msg bot">CRIMSON AI prêt. Envoie un texte, une image ou prends une photo.</div>
   </div>
 
   <div id="preview-area">
     <img id="preview-thumb" src="" alt="Image">
-    <span style="font-size: 0.8rem; color: #aaa;">Image sélectionnée</span>
+    <span style="font-size: 0.8rem; color: #aaa;">Média sélectionné</span>
     <button id="remove-img-btn" onclick="removeImage()">✕</button>
   </div>
 
   <div id="input-area">
-    <button id="file-btn" onclick="document.getElementById('image-input').click()">📎</button>
-    <input type="file" id="image-input" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
+    <!-- Bouton Appareil Photo direct -->
+    <button class="action-btn" onclick="document.getElementById('camera-input').click()" title="Prendre une photo">📷</button>
+    <input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;" onchange="handleImageSelect(event)">
+
+    <!-- Bouton Galerie / Fichiers -->
+    <button class="action-btn" onclick="document.getElementById('file-input').click()" title="Choisir un fichier">📎</button>
+    <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
+
     <input type="text" id="prompt-input" placeholder="Pose ta question...">
     <button id="send-btn" onclick="sendPrompt()">Envoyer</button>
   </div>
 
   <script>
+    function applyRandomAccentColor() {
+      const hexColor = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
+      const root = document.documentElement;
+      root.style.setProperty('--accent-color', hexColor);
+      root.style.setProperty('--accent-glow', hexColor + '99');
+      document.getElementById('splash-color-text').textContent = `ACCENT : ${hexColor}`;
+    }
+
+    applyRandomAccentColor();
+
     window.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         const splash = document.getElementById('splash-screen');
@@ -161,7 +182,8 @@
     }
 
     function newChat() {
-      document.getElementById('chat-box').innerHTML = '<div class="msg bot">Nouvelle session.</div>';
+      applyRandomAccentColor();
+      document.getElementById('chat-box').innerHTML = '<div class="msg bot">Nouvelle session initialisée.</div>';
       toggleSidebar();
     }
 
@@ -183,7 +205,8 @@
     function removeImage() {
       selectedBase64 = null;
       selectedMimeType = null;
-      document.getElementById('image-input').value = '';
+      document.getElementById('file-input').value = '';
+      document.getElementById('camera-input').value = '';
       document.getElementById('preview-area').style.display = 'none';
     }
 
