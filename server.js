@@ -1,35 +1,53 @@
 const express = require('express');
 const axios = require('axios');
+const path = require('path');
 const cors = require('cors');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
 
-app.post('/api/chat', async (req, res) => {
-    const { prompt } = req.body;
-    if (!prompt) return res.status(400).json({ error: "Prompt vide" });
+// Servir les fichiers statiques du dossier public
+app.use(express.static(path.join(__dirname, 'public')));
 
-    try {
-        const response = await axios.post("https://christus-s-apis.vercel.app/api/na/ai/gemini", {
-            prompt: prompt,
-            image_url: null
-        }, { timeout: 10000 });
-
-        const data = response.data;
-        let answer = typeof data === "string" ? data : (data.result?.answer || data.answer || data.response || "Pas de réponse");
-
-        res.json({ reply: answer });
-    } catch (err) {
-        try {
-            const popcatRes = await axios.get(`https://api.popcat.xyz/gemini?msg=${encodeURIComponent(prompt)}`);
-            res.json({ reply: popcatRes.data.response || "Erreur serveur" });
-        } catch (e) {
-            res.status(500).json({ error: "Toutes les API ont échoué" });
-        }
-    }
+// Route racine
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-const PORT = 3000;
-app.listen(PORT, () => console.log(`Serveur prêt sur http://localhost:${PORT}`));
+// Route API
+app.post('/api/prompt', async (req, res) => {
+  const { prompt } = req.body;
+  if (!prompt) return res.status(400).json({ error: 'Prompt requis' });
+
+  // 1. Vercel API
+  try {
+    const response = await axios.get(`https://apis-samir.vercel.app/gemini?prompt=${encodeURIComponent(prompt)}`);
+    if (response.data && response.data.result) {
+      return res.json({ reply: response.data.result });
+    }
+  } catch (e) {}
+
+  // 2. Popcat API
+  try {
+    const response = await axios.get(`https://api.popcat.xyz/chatbot?msg=${encodeURIComponent(prompt)}&owner=CRIMSON&botname=CRIMSONAI`);
+    if (response.data && response.data.response) {
+      return res.json({ reply: response.data.response });
+    }
+  } catch (e) {}
+
+  // 3. Sandip API
+  try {
+    const response = await axios.get(`https://sandipbaruwal.onrender.com/gemini?prompt=${encodeURIComponent(prompt)}`);
+    if (response.data && response.data.answer) {
+      return res.json({ reply: response.data.answer });
+    }
+  } catch (e) {}
+
+  res.status(500).json({ error: 'Toutes les API ont échoué.' });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Serveur prêt sur le port ${PORT}`);
+});
