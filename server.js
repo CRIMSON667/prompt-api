@@ -30,22 +30,31 @@ app.post('/api/prompt', async (req, res) => {
   const { prompt } = req.body;
   if (!prompt) return res.status(400).json({ error: 'Prompt requis' });
 
-  const fullPrompt = `${SYSTEM_INSTRUCTION}\n\nUser: ${prompt}`;
-
   try {
-    const apiUrl = `https://sonic-gpt.vercel.app/api/gpt?prompt=${encodeURIComponent(fullPrompt)}`;
-    const response = await axios.get(apiUrl, { timeout: 20000 });
+    const response = await axios.post('https://text.pollinations.ai/', {
+      messages: [
+        { role: 'system', content: SYSTEM_INSTRUCTION },
+        { role: 'user', content: prompt }
+      ],
+      model: 'openai',
+      jsonMode: false
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+      },
+      timeout: 15000
+    });
 
     if (response.data) {
-      const replyText = response.data.result || response.data.reply || response.data.message || response.data.response || response.data.data;
-      if (replyText) return res.json({ reply: replyText });
-      if (typeof response.data === 'string') return res.json({ reply: response.data });
+      const replyText = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+      return res.json({ reply: replyText });
     }
 
-    res.status(500).json({ reply: "Format de réponse inconnu de l'API Sonic-GPT." });
+    res.status(500).json({ reply: "Aucune réponse reçue." });
   } catch (e) {
-    console.error("Sonic-GPT API error:", e.message);
-    res.status(500).json({ reply: "Erreur lors de la connexion à Sonic-GPT: " + e.message });
+    console.error("Erreur Backend AI:", e.message);
+    res.status(500).json({ reply: "Erreur serveur : " + e.message });
   }
 });
 
