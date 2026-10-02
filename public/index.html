@@ -11,11 +11,11 @@
     
     /* Header */
     header { background: #0f0203; border-bottom: 1px solid #330000; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-    .menu-btn { background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; }
+    .menu-btn { background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; padding: 4px; }
     header h1 { color: #ff1e27; font-size: 1rem; letter-spacing: 1px; text-transform: uppercase; font-weight: 800; }
 
     /* Overlay & Sidebar */
-    #sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; }
+    #sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; }
     #sidebar-overlay.active { display: block; }
     
     #sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #0a0a0a; border-right: 1px solid #222; z-index: 201; transition: left 0.25s ease-out; display: flex; flex-direction: column; padding: 16px 12px; }
@@ -167,23 +167,31 @@
     const conversationHistory = [];
 
     function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('active');
-      document.getElementById('sidebar-overlay').classList.toggle('active');
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      if (sidebar && overlay) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+      }
     }
 
     function toggleDrawer() {
-      document.getElementById('action-drawer').classList.toggle('active');
+      const drawer = document.getElementById('action-drawer');
+      if (drawer) {
+        drawer.classList.toggle('active');
+      }
     }
 
     function selectAction(name) {
       const input = document.getElementById('prompt-input');
-      input.value = `[${name}] `;
+      input.value = '[' + name + '] ';
       toggleDrawer();
       input.focus();
     }
 
     function newChat() {
-      document.getElementById('chat-box').innerHTML = '<div class="msg bot">Nouvelle session lancée. De quoi s'agit-il, Brayan ?</div>';
+      const chatBox = document.getElementById('chat-box');
+      chatBox.innerHTML = '<div class="msg bot">Nouvelle session lancée. De quoi sagit-il, Brayan ?</div>';
       conversationHistory.length = 0;
       toggleSidebar();
     }
