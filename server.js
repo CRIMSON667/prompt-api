@@ -17,31 +17,38 @@ app.post('/api/prompt', async (req, res) => {
   const { prompt } = req.body;
   if (!prompt) return res.status(400).json({ error: 'Prompt requis' });
 
-  // 1. Pollinations AI (Ultra rapide & stable)
-  try {
-    const response = await axios.get(`https://text.pollinations.ai/${encodeURIComponent(prompt)}`, { timeout: 8000 });
-    if (response.data) {
-      return res.json({ reply: response.data });
-    }
-  } catch (e) {}
+  const headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+  };
 
-  // 2. Vercel API
+  // 1. Pollinations OpenAI Endpoint (Très stable depuis Render)
   try {
-    const response = await axios.get(`https://apis-samir.vercel.app/gemini?prompt=${encodeURIComponent(prompt)}`, { timeout: 5000 });
+    const response = await axios.get(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=openai`, {
+      headers,
+      timeout: 10000
+    });
+    if (response.data) {
+      const textResponse = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+      return res.json({ reply: textResponse });
+    }
+  } catch (e) {
+    console.log('Pollinations failed:', e.message);
+  }
+
+  // 2. Vercel Gemini API
+  try {
+    const response = await axios.get(`https://apis-samir.vercel.app/gemini?prompt=${encodeURIComponent(prompt)}`, {
+      headers,
+      timeout: 8000
+    });
     if (response.data && response.data.result) {
       return res.json({ reply: response.data.result });
     }
-  } catch (e) {}
+  } catch (e) {
+    console.log('Vercel failed:', e.message);
+  }
 
-  // 3. Sandip API
-  try {
-    const response = await axios.get(`https://sandipbaruwal.onrender.com/gemini?prompt=${encodeURIComponent(prompt)}`, { timeout: 5000 });
-    if (response.data && response.data.answer) {
-      return res.json({ reply: response.data.answer });
-    }
-  } catch (e) {}
-
-  res.status(500).json({ reply: "Désolé, les serveurs d'IA sont temporairement indisponibles. Réessaye dans un instant." });
+  res.status(500).json({ reply: "Erreur d'accès aux moteurs d'IA. Réessaie dans quelques secondes." });
 });
 
 const PORT = process.env.PORT || 3000;
