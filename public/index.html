@@ -2,80 +2,139 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CRIMSON AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SAE ITOSHI // CRIMSON AI</title>
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
-    body {
-      background-color: #0d0d0d;
+    html, body {
+      height: 100%;
+      height: 100dvh;
+      background-color: #050505;
       color: #e0e0e0;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
       overflow: hidden;
     }
 
+    /* Écran d'animation d'entrée */
+    #splash-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      animation: fadeOutSplash 1s forwards 2.2s;
+    }
+
+    .splash-title {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #dc143c;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      text-shadow: 0 0 20px rgba(220, 20, 60, 0.8);
+      animation: pulseGlow 1.2s infinite alternate;
+    }
+
+    .splash-sub {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #666;
+      letter-spacing: 2px;
+    }
+
+    @keyframes pulseGlow {
+      from { transform: scale(0.98); opacity: 0.8; }
+      to { transform: scale(1.03); opacity: 1; text-shadow: 0 0 30px rgba(220, 20, 60, 1); }
+    }
+
+    @keyframes fadeOutSplash {
+      to { opacity: 0; visibility: hidden; }
+    }
+
+    /* Structure Principale */
+    #app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      height: 100dvh;
+      position: relative;
+    }
+
     header {
-      background: linear-gradient(180deg, #1a0505 0%, #0d0d0d 100%);
-      padding: 18px;
+      background: linear-gradient(180deg, #120303 0%, #050505 100%);
+      padding: 14px 18px;
       text-align: center;
-      border-bottom: 1px solid #330a0a;
-      box-shadow: 0 4px 15px rgba(220, 20, 60, 0.15);
+      border-bottom: 1px solid #2a0808;
+      box-shadow: 0 4px 20px rgba(220, 20, 60, 0.15);
+      flex-shrink: 0;
     }
 
     header h1 {
       color: #dc143c;
-      font-size: 1.5rem;
-      letter-spacing: 2px;
+      font-size: 1.3rem;
+      letter-spacing: 3px;
       text-transform: uppercase;
       font-weight: 800;
-      text-shadow: 0 0 10px rgba(220, 20, 60, 0.5);
+    }
+
+    header p {
+      font-size: 0.75rem;
+      color: #777;
+      margin-top: 2px;
+      letter-spacing: 1px;
     }
 
     #chat-container {
       flex: 1;
       overflow-y: auto;
-      padding: 20px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
       scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
     }
 
     .message {
-      max-width: 82%;
+      max-width: 85%;
       padding: 12px 16px;
-      border-radius: 14px;
-      font-size: 0.95rem;
+      border-radius: 12px;
+      font-size: 0.92rem;
       line-height: 1.45;
       word-wrap: break-word;
-      animation: fadeIn 0.2s ease-in-out;
+      animation: slideIn 0.2s ease-out;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
     .user {
       align-self: flex-end;
-      background: linear-gradient(135deg, #8b0000 0%, #dc143c 100%);
+      background: linear-gradient(135deg, #7a0000 0%, #b30000 100%);
       color: #ffffff;
       border-bottom-right-radius: 2px;
-      box-shadow: 0 3px 10px rgba(220, 20, 60, 0.25);
+      box-shadow: 0 3px 12px rgba(179, 0, 0, 0.3);
     }
 
     .ai {
       align-self: flex-start;
-      background-color: #181818;
-      color: #d1d1d1;
-      border: 1px solid #2a2a2a;
+      background-color: #121212;
+      color: #e0e0e0;
+      border: 1px solid #262626;
+      border-left: 3px solid #dc143c;
       border-bottom-left-radius: 2px;
     }
 
@@ -88,24 +147,31 @@
       border-radius: 8px;
     }
 
+    /* Zone de Saisie Fixe (Clavier Mobile) */
     #input-container {
-      padding: 16px;
-      background-color: #121212;
+      padding: 12px 14px;
+      background-color: #0d0d0d;
       border-top: 1px solid #222;
       display: flex;
-      gap: 10px;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
     }
 
     #prompt {
       flex: 1;
-      background-color: #1a1a1a;
+      background-color: #161616;
       border: 1px solid #333;
-      border-radius: 22px;
-      padding: 12px 18px;
+      border-radius: 20px;
+      padding: 12px 16px;
       color: #fff;
-      font-size: 0.95rem;
+      font-size: 1rem;
       outline: none;
       transition: border-color 0.2s;
+      -webkit-appearance: none;
     }
 
     #prompt:focus {
@@ -116,47 +182,57 @@
       background: linear-gradient(135deg, #8b0000 0%, #dc143c 100%);
       color: white;
       border: none;
-      padding: 12px 22px;
-      border-radius: 22px;
+      padding: 12px 18px;
+      border-radius: 20px;
       font-weight: bold;
+      font-size: 0.9rem;
       cursor: pointer;
       transition: opacity 0.2s, transform 0.1s;
       box-shadow: 0 3px 10px rgba(220, 20, 60, 0.3);
+      flex-shrink: 0;
     }
 
     button:active {
-      transform: scale(0.96);
+      transform: scale(0.95);
     }
 
     button:disabled {
-      opacity: 0.5;
+      opacity: 0.4;
       cursor: not-allowed;
     }
 
-    /* Custom scrollbar */
     #chat-container::-webkit-scrollbar {
-      width: 6px;
+      width: 4px;
     }
 
     #chat-container::-webkit-scrollbar-thumb {
-      background-color: #222;
-      border-radius: 3px;
+      background-color: #333;
+      border-radius: 2px;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>CRIMSON AI</h1>
-  </header>
-
-  <div id="chat-container">
-    <div class="message ai">CRIMSON AI opérationnel. Qu'est-ce qu'on teste aujourd'hui ?</div>
+  <!-- Animation d'Entrée -->
+  <div id="splash-screen">
+    <div class="splash-title">SAE ITOSHI</div>
+    <div class="splash-sub">EVALUATION DES CAPACITES...</div>
   </div>
 
-  <div id="input-container">
-    <input type="text" id="prompt" placeholder="Pose une question..." onkeydown="if(event.key==='Enter') sendPrompt()">
-    <button id="send-btn" onclick="sendPrompt()">Envoyer</button>
+  <div id="app-container">
+    <header>
+      <h1>SAE ITOSHI</h1>
+      <p>CRIMSON SYSTEM // ANALYSE TACTIQUE</p>
+    </header>
+
+    <div id="chat-container">
+      <div class="message ai">Montre-moi ce que tu vaux, Brayan. Ne me fais pas perdre mon temps avec des futilités.</div>
+    </div>
+
+    <div id="input-container">
+      <input type="text" id="prompt" placeholder="Saisis ton message..." autocomplete="off" onkeydown="if(event.key==='Enter') sendPrompt()">
+      <button id="send-btn" onclick="sendPrompt()">Envoyer</button>
+    </div>
   </div>
 
   <script>
@@ -168,7 +244,6 @@
 
       if (!text) return;
 
-      // Afficher le message utilisateur
       const userDiv = document.createElement('div');
       userDiv.className = 'message user';
       userDiv.textContent = text;
@@ -178,10 +253,9 @@
       btn.disabled = true;
       chat.scrollTop = chat.scrollHeight;
 
-      // Indicator de chargement
       const loadingDiv = document.createElement('div');
       loadingDiv.className = 'message ai';
-      loadingDiv.textContent = 'Analyse en cours...';
+      loadingDiv.textContent = 'Analyse de tes faiblesses...';
       chat.appendChild(loadingDiv);
       chat.scrollTop = chat.scrollHeight;
 
@@ -193,10 +267,10 @@
         });
         const data = await res.json();
         
-        loadingDiv.textContent = data.reply || "Aucune réponse reçue.";
+        loadingDiv.textContent = data.reply || "Tch. Aucune donnée exploitable.";
       } catch (err) {
         loadingDiv.className = 'message error-msg';
-        loadingDiv.textContent = "Erreur de connexion au serveur.";
+        loadingDiv.textContent = "Erreur système. Connexion interrompue.";
       } finally {
         btn.disabled = false;
         chat.scrollTop = chat.scrollHeight;

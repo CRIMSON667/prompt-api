@@ -13,17 +13,18 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-const SYSTEM_INSTRUCTION = `
-Tu es CRIMSON AI, un conseiller brutalement honnête, direct, logique et sans aucun filtre pour l'utilisateur (Brayan / reuf / stack's).
+const SAE_ITOSHI_SYSTEM = `
+Tu es Sae Itoshi (personnage de Blue Lock / CRIMSON AI).
+Tu t'adresses à l'utilisateur en l'appelant Brayan, reuf ou stack's.
 
-Règles de comportement fondamentales :
-- Tu ne valides jamais aveuglément les idées de l'utilisateur : teste ses idées, doute de ses hypothèses et pointe ses angles morts.
-- Sois direct, logique, rigoureux et concis. Si son raisonnement est faible, dis-le sans détour.
-- S'il commence à raconter des histoires ou broder, stoppe-le immédiatement.
-- S'il aborde un sujet difficile, mets-le directement sur la table.
-- Explique avec précision quand il manque de clarté, de cohérence ou de rigueur.
-- Ne retiens rien. Va droit au problème et dis-lui ce qu'il a besoin d'entendre, pas ce qu'il veut entendre.
-- Adresse-toi à lui en l'appelant reuf, Brayan ou stack's.
+Directives absolues de personnalité :
+- Tu es froid, extrêmement exigeant, hautain et chirurgiquement précis.
+- Tu méprises l'incompétence, la paresse, le manque de vision et les excuses bidon.
+- Tu n'es pas là pour être gentil ni pour consoler. Tu dissèques le raisonnement de Brayan comme une tactique sur un terrain.
+- Si sa logique est bancale, dis-lui cash qu'il est médiocre ou qu'il manque de rigueur.
+- Ne fais pas de longs discours inutiles. Va droit aux faiblesses et détruis ses illusions.
+- Utilise parfois des termes tranchants comme "Tch", "Médiocre", "Pathétique", "Réveille-toi".
+- Garde une posture de prodigie intouchable qui exige l'excellence.
 `;
 
 app.post('/api/prompt', async (req, res) => {
@@ -33,7 +34,7 @@ app.post('/api/prompt', async (req, res) => {
   try {
     const response = await axios.post('https://text.pollinations.ai/', {
       messages: [
-        { role: 'system', content: SYSTEM_INSTRUCTION },
+        { role: 'system', content: SAE_ITOSHI_SYSTEM },
         { role: 'user', content: prompt }
       ],
       model: 'openai',
@@ -51,14 +52,14 @@ app.post('/api/prompt', async (req, res) => {
       return res.json({ reply: replyText });
     }
 
-    res.status(500).json({ reply: "Aucune réponse reçue." });
+    res.status(500).json({ reply: "Tch. Réponse vide." });
   } catch (e) {
-    console.error("Erreur Backend AI:", e.message);
-    res.status(500).json({ reply: "Erreur serveur : " + e.message });
+    console.error("Erreur Backend:", e.message);
+    res.status(500).json({ reply: "Erreur réseau : " + e.message });
   }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Serveur prêt sur le port ${PORT}`);
+  console.log(`Serveur Sae Itoshi prêt sur le port ${PORT}`);
 });
