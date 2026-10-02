@@ -4,451 +4,232 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CRIMSON AI</title>
-  
-  <!-- Configuration PWA -->
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#dc143c">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: #050505; color: #e0e0e0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    
+    /* Header */
+    header { background: #0f0203; border-bottom: 1px solid #330000; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .menu-btn { background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; }
+    header h1 { color: #ff1e27; font-size: 1rem; letter-spacing: 1px; text-transform: uppercase; font-weight: 800; }
 
-    html, body {
-      height: 100%;
-      height: 100dvh;
-      background-color: #050505;
-      color: #e0e0e0;
-      overflow: hidden;
-    }
+    /* Overlay & Sidebar */
+    #sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; }
+    #sidebar-overlay.active { display: block; }
+    
+    #sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #0a0a0a; border-right: 1px solid #222; z-index: 201; transition: left 0.25s ease-out; display: flex; flex-direction: column; padding: 16px 12px; }
+    #sidebar.active { left: 0; }
 
-    /* Écran d'animation futuriste */
-    #splash-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: #000000;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      animation: fadeOutSplash 1s forwards 3s;
-    }
+    .sidebar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding: 0 4px; }
+    .sidebar-title { font-size: 1.1rem; font-weight: bold; color: #fff; }
+    .close-btn { background: none; border: none; color: #888; font-size: 1.2rem; cursor: pointer; }
 
-    .orb-container {
-      position: relative;
-      width: 120px;
-      height: 120px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 25px;
-    }
+    .menu-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; }
+    .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; color: #ddd; font-size: 0.9rem; cursor: pointer; text-decoration: none; }
+    .menu-item:active, .menu-item.active { background: #1a1a1a; }
+    .menu-icon { font-size: 1.1rem; width: 20px; text-align: center; color: #aaa; }
 
-    .orb-core {
-      width: 50px;
-      height: 50px;
-      background: radial-gradient(circle, #ff1a40 0%, #8b0000 70%, #000 100%);
-      border-radius: 50%;
-      box-shadow: 0 0 35px #dc143c, inset 0 0 15px #ff4d6d;
-      animation: pulseCore 1.5s ease-in-out infinite alternate;
-    }
+    .section-title { font-size: 0.75rem; color: #666; text-transform: uppercase; font-weight: bold; margin: 12px 12px 6px; }
 
-    .orb-ring {
-      position: absolute;
-      width: 90px;
-      height: 90px;
-      border: 2px solid transparent;
-      border-top-color: #dc143c;
-      border-right-color: rgba(220, 20, 60, 0.3);
-      border-radius: 50%;
-      animation: rotateRing 2s linear infinite;
-    }
+    .recents-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+    .recent-item { padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+    .recent-item:active { background: #1a1a1a; }
 
-    .orb-ring-outer {
-      position: absolute;
-      width: 115px;
-      height: 115px;
-      border: 1px dashed rgba(220, 20, 60, 0.6);
-      border-radius: 50%;
-      animation: rotateRingReverse 4s linear infinite;
-    }
+    .sidebar-footer { border-top: 1px solid #1f1f1f; padding-top: 12px; margin-top: auto; display: flex; align-items: center; justify-content: space-between; }
+    .user-profile { display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 32px; height: 32px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #ff1e27; border: 1px solid #ff1e27; font-size: 0.8rem; }
+    .user-name { font-size: 0.88rem; font-weight: 600; color: #eee; }
+    .settings-btn { background: none; border: none; color: #888; font-size: 1.1rem; cursor: pointer; }
 
-    @keyframes pulseCore {
-      from { transform: scale(0.9); box-shadow: 0 0 20px #dc143c; }
-      to { transform: scale(1.1); box-shadow: 0 0 45px #ff1a40, 0 0 10px #ffffff; }
-    }
+    /* Zone Chat */
+    #chat-box { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; }
 
-    @keyframes rotateRing {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
+    .msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 0.92rem; line-height: 1.4; word-wrap: break-word; }
+    .user { align-self: flex-end; background: #990000; color: #fff; border-bottom-right-radius: 2px; }
+    .bot { align-self: flex-start; background: #141414; border: 1px solid #2a0808; color: #ddd; border-bottom-left-radius: 2px; }
 
-    @keyframes rotateRingReverse {
-      from { transform: rotate(360deg); }
-      to { transform: rotate(0deg); }
-    }
+    /* Zone Saisie & Drawer Options */
+    #input-area { background: #0f0203; padding: 10px; border-top: 1px solid #220000; display: flex; gap: 8px; align-items: center; flex-shrink: 0; position: relative; }
+    .attach-btn { background: #1a0506; border: 1px solid #4a0000; color: #ff1e27; font-size: 1.2rem; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+    #prompt-input { flex: 1; background: #121212; border: 1px solid #330000; border-radius: 20px; padding: 10px 14px; color: #fff; outline: none; font-size: 0.9rem; }
+    #send-btn { background: #cc0000; color: #fff; border: none; padding: 10px 16px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; cursor: pointer; }
 
-    .splash-title {
-      font-size: 2.2rem;
-      font-weight: 900;
-      color: #dc143c;
-      letter-spacing: 6px;
-      text-transform: uppercase;
-      text-shadow: 0 0 25px rgba(220, 20, 60, 0.9);
-    }
-
-    .splash-sub {
-      margin-top: 10px;
-      font-size: 0.75rem;
-      color: #888;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-    }
-
-    @keyframes fadeOutSplash {
-      to { opacity: 0; visibility: hidden; }
-    }
-
-    /* Structure Principale */
-    #app-container {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      height: 100dvh;
-      position: relative;
-    }
-
-    header {
-      background: linear-gradient(180deg, #150303 0%, #050505 100%);
-      padding: 14px 18px;
-      text-align: center;
-      border-bottom: 1px solid #2a0808;
-      box-shadow: 0 4px 20px rgba(220, 20, 60, 0.15);
-      flex-shrink: 0;
-    }
-
-    header h1 {
-      color: #dc143c;
-      font-size: 1.3rem;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      font-weight: 800;
-    }
-
-    header p {
-      font-size: 0.72rem;
-      color: #777;
-      margin-top: 2px;
-      letter-spacing: 1px;
-    }
-
-    #chat-container {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .message {
-      max-width: 85%;
-      padding: 12px 16px;
-      border-radius: 12px;
-      font-size: 0.92rem;
-      line-height: 1.5;
-      word-wrap: break-word;
-      animation: slideIn 0.2s ease-out;
-    }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .user {
-      align-self: flex-end;
-      background: linear-gradient(135deg, #7a0000 0%, #b30000 100%);
-      color: #ffffff;
-      border-bottom-right-radius: 2px;
-      box-shadow: 0 3px 12px rgba(179, 0, 0, 0.3);
-    }
-
-    .ai {
-      align-self: flex-start;
-      background-color: #111111;
-      color: #e0e0e0;
-      border: 1px solid #262626;
-      border-left: 3px solid #dc143c;
-      border-bottom-left-radius: 2px;
-    }
-
-    .ai img, .user img {
-      max-width: 100%;
-      border-radius: 8px;
-      margin-top: 8px;
-      border: 1px solid #333;
-    }
-
-    .error-msg {
-      align-self: center;
-      background-color: rgba(220, 20, 60, 0.1);
-      border: 1px solid #dc143c;
-      color: #ff6b6b;
-      font-size: 0.85rem;
-      border-radius: 8px;
-    }
-
-    #input-container {
-      padding: 10px 12px;
-      background-color: #0d0d0d;
-      border-top: 1px solid #222;
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-shrink: 0;
-      position: sticky;
-      bottom: 0;
-      z-index: 10;
-    }
-
-    #prompt {
-      flex: 1;
-      background-color: #161616;
-      border: 1px solid #333;
-      border-radius: 20px;
-      padding: 12px 16px;
-      color: #fff;
-      font-size: 0.95rem;
-      outline: none;
-      transition: border-color 0.2s;
-      -webkit-appearance: none;
-    }
-
-    #prompt:focus {
-      border-color: #dc143c;
-    }
-
-    .file-btn {
-      background: #1c1c1c;
-      border: 1px solid #333;
-      color: #aaa;
-      padding: 10px;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 42px;
-      height: 42px;
-      flex-shrink: 0;
-    }
-
-    .file-btn:active {
-      background: #2a2a2a;
-    }
-
-    button.send-btn {
-      background: linear-gradient(135deg, #8b0000 0%, #dc143c 100%);
-      color: white;
-      border: none;
-      padding: 12px 18px;
-      border-radius: 20px;
-      font-weight: bold;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s;
-      box-shadow: 0 3px 10px rgba(220, 20, 60, 0.3);
-      flex-shrink: 0;
-    }
-
-    button.send-btn:active {
-      transform: scale(0.95);
-    }
-
-    button:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    #preview-container {
-      display: none;
-      padding: 6px 12px;
-      background: #0d0d0d;
-      border-top: 1px solid #1f1f1f;
-      align-items: center;
-      gap: 10px;
-    }
-
-    #preview-img {
-      height: 40px;
-      border-radius: 6px;
-      border: 1px solid #dc143c;
-    }
-
-    .remove-img {
-      color: #ff4d4d;
-      font-size: 0.8rem;
-      cursor: pointer;
-    }
-
-    #chat-container::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    #chat-container::-webkit-scrollbar-thumb {
-      background-color: #333;
-      border-radius: 2px;
-    }
+    #action-drawer { display: none; position: absolute; bottom: 60px; left: 0; right: 0; background: #111111; border-top: 1px solid #330000; border-radius: 20px 20px 0 0; padding: 16px; box-shadow: 0 -5px 25px rgba(0,0,0,0.8); z-index: 100; flex-direction: column; gap: 15px; }
+    #action-drawer.active { display: flex; }
+    .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; text-align: center; }
+    .action-item { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 0.72rem; color: #aaa; cursor: pointer; }
+    .action-icon { width: 50px; height: 50px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: #fff; }
+    .action-list { display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #222; padding-top: 12px; }
+    .list-item { display: flex; align-items: center; gap: 12px; color: #ddd; font-size: 0.88rem; cursor: pointer; }
+    .list-item-icon { font-size: 1.2rem; color: #ff1e27; width: 24px; text-align: center; }
+    .list-item-text span { display: block; font-size: 0.7rem; color: #666; }
   </style>
 </head>
 <body>
 
-  <div id="splash-screen">
-    <div class="orb-container">
-      <div class="orb-ring-outer"></div>
-      <div class="orb-ring"></div>
-      <div class="orb-core"></div>
+  <!-- Sidebar Overlay -->
+  <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+  <!-- Sidebar Menu -->
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">CRIMSON</span>
+      <button class="close-btn" onclick="toggleSidebar()">✕</button>
     </div>
-    <div class="splash-title">CRIMSON AI</div>
-    <div class="splash-sub">CONNEXION NEURONALE...</div>
+
+    <div class="menu-list">
+      <div class="menu-item" onclick="newChat()">
+        <span class="menu-icon">✏️</span>
+        <span>Nouvelle discussion</span>
+      </div>
+      <div class="menu-item">
+        <span class="menu-icon">🔍</span>
+        <span>Rechercher</span>
+      </div>
+      <div class="menu-item">
+        <span class="menu-icon">🎓</span>
+        <span>Étudiants</span>
+      </div>
+      <div class="menu-item">
+        <span class="menu-icon">🖼️</span>
+        <span>Images</span>
+      </div>
+      <div class="menu-item">
+        <span class="menu-icon">📚</span>
+        <span>Bibliothèque</span>
+      </div>
+    </div>
+
+    <div class="section-title">Notebooks</div>
+    <div class="menu-list">
+      <div class="menu-item">
+        <span class="menu-icon">+</span>
+        <span>Nouveau notebook</span>
+      </div>
+    </div>
+
+    <div class="section-title">Récents</div>
+    <div class="recents-list" id="recents-container">
+      <div class="recent-item">Extraction des API du Bot</div>
+      <div class="recent-item">Gestion des espaces dans App Inventor</div>
+      <div class="recent-item">Correction de code Bot Messenger</div>
+      <div class="recent-item">Demande de précisions urgentes</div>
+      <div class="recent-item">Optimisation d'un code de bot</div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-profile">
+        <div class="avatar">BS</div>
+        <span class="user-name">Brayan Slyde</span>
+      </div>
+      <button class="settings-btn">⚙️</button>
+    </div>
   </div>
 
-  <div id="app-container">
-    <header>
-      <h1>CRIMSON AI</h1>
-      <p>CONSEILLER TACTIQUE // GENERATEUR & ANALYSTE</p>
-    </header>
+  <header>
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    <h1>CRIMSON AI</h1>
+    <div style="width: 24px;"></div>
+  </header>
 
-    <div id="chat-container">
-      <div class="message ai">Montre-moi ce que tu vaux, Brayan. Ne me fais pas perdre mon temps.</div>
-    </div>
+  <div id="chat-box">
+    <div class="msg bot">Montre-moi ce que tu vaux, Brayan. Ne me fais pas perdre mon temps.</div>
+  </div>
 
-    <div id="preview-container">
-      <img id="preview-img" src="" alt="Aperçu">
-      <span class="remove-img" onclick="clearImage()">✕ Supprimer</span>
+  <!-- Tiroir Actions -->
+  <div id="action-drawer">
+    <div class="action-grid">
+      <div class="action-item" onclick="selectAction('Photos')"><div class="action-icon">🖼️</div><span>Photos</span></div>
+      <div class="action-item" onclick="selectAction('Appareil photo')"><div class="action-icon">📷</div><span>Appareil...</span></div>
+      <div class="action-item" onclick="selectAction('Fichiers')"><div class="action-icon">📎</div><span>Fichiers</span></div>
+      <div class="action-item" onclick="selectAction('Drive')"><div class="action-icon">☁️</div><span>Drive</span></div>
     </div>
+    <div class="action-list">
+      <div class="list-item" onclick="selectAction('Deep Research')">
+        <div class="list-item-icon">🌐</div>
+        <div class="list-item-text">Deep Research<span>Obtenez des rapports détaillés</span></div>
+      </div>
+      <div class="list-item" onclick="selectAction('Canvas')">
+        <div class="list-item-icon">📑</div>
+        <div class="list-item-text">Canvas<span>Codez, écrivez ou créez des diapositives</span></div>
+      </div>
+    </div>
+  </div>
 
-    <div id="input-container">
-      <label class="file-btn" for="image-input">
-        📷
-      </label>
-      <input type="file" id="image-input" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
-      
-      <input type="text" id="prompt" placeholder="Message ou demande d'image..." autocomplete="off" onkeydown="if(event.key==='Enter') sendPrompt()">
-      <button class="send-btn" id="send-btn" onclick="sendPrompt()">Envoyer</button>
-    </div>
+  <div id="input-area">
+    <button class="attach-btn" onclick="toggleDrawer()">+</button>
+    <input type="text" id="prompt-input" placeholder="Message ou demande...">
+    <button id="send-btn" onclick="sendPrompt()">Envoyer</button>
   </div>
 
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js');
-      });
+    const conversationHistory = [];
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('sidebar-overlay').classList.toggle('active');
     }
 
-    let selectedImageBase64 = null;
-
-    function handleImageSelect(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        selectedImageBase64 = e.target.result;
-        document.getElementById('preview-img').src = selectedImageBase64;
-        document.getElementById('preview-container').style.display = 'flex';
-      };
-      reader.readAsDataURL(file);
+    function toggleDrawer() {
+      document.getElementById('action-drawer').classList.toggle('active');
     }
 
-    function clearImage() {
-      selectedImageBase64 = null;
-      document.getElementById('image-input').value = '';
-      document.getElementById('preview-container').style.display = 'none';
+    function selectAction(name) {
+      const input = document.getElementById('prompt-input');
+      input.value = `[${name}] `;
+      toggleDrawer();
+      input.focus();
+    }
+
+    function newChat() {
+      document.getElementById('chat-box').innerHTML = '<div class="msg bot">Nouvelle session lancée. De quoi s'agit-il, Brayan ?</div>';
+      conversationHistory.length = 0;
+      toggleSidebar();
     }
 
     async function sendPrompt() {
-      const input = document.getElementById('prompt');
-      const btn = document.getElementById('send-btn');
-      const chat = document.getElementById('chat-container');
+      const input = document.getElementById('prompt-input');
       const text = input.value.trim();
+      if (!text) return;
 
-      if (!text && !selectedImageBase64) return;
+      document.getElementById('action-drawer').classList.remove('active');
 
-      const userDiv = document.createElement('div');
-      userDiv.className = 'message user';
-      
-      if (text) {
-        const p = document.createElement('p');
-        p.textContent = text;
-        userDiv.appendChild(p);
-      }
+      const chatBox = document.getElementById('chat-box');
 
-      if (selectedImageBase64) {
-        const img = document.createElement('img');
-        img.src = selectedImageBase64;
-        userDiv.appendChild(img);
-      }
-
-      chat.appendChild(userDiv);
-
-      const currentImage = selectedImageBase64;
+      const userMsg = document.createElement('div');
+      userMsg.className = 'msg user';
+      userMsg.textContent = text;
+      chatBox.appendChild(userMsg);
       input.value = '';
-      clearImage();
-      btn.disabled = true;
-      chat.scrollTop = chat.scrollHeight;
 
-      const loadingDiv = document.createElement('div');
-      loadingDiv.className = 'message ai';
-      loadingDiv.textContent = 'Traitement tactique en cours...';
-      chat.appendChild(loadingDiv);
-      chat.scrollTop = chat.scrollHeight;
+      conversationHistory.push({ sender: 'user', text: text });
+
+      const botMsg = document.createElement('div');
+      botMsg.className = 'msg bot';
+      botMsg.textContent = "Traitement en cours...";
+      chatBox.appendChild(botMsg);
+      chatBox.scrollTop = chatBox.scrollHeight;
 
       try {
         const res = await fetch('/api/prompt', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: text, image: currentImage })
+          body: JSON.stringify({ prompt: text, history: conversationHistory })
         });
         const data = await res.json();
-        
-        loadingDiv.innerHTML = '';
 
-        if (data.reply) {
-          const textNode = document.createElement('div');
-          textNode.innerHTML = data.reply.replace(/\n/g, '<br>');
-          loadingDiv.appendChild(textNode);
-        }
-
-        if (data.imageUrl) {
-          const generatedImg = document.createElement('img');
-          generatedImg.src = data.imageUrl;
-          loadingDiv.appendChild(generatedImg);
-        }
-
-        if (!data.reply && !data.imageUrl) {
-          loadingDiv.textContent = "Tch. Aucune donnée exploitable.";
-        }
+        botMsg.textContent = data.reply || "Aucune réponse.";
+        conversationHistory.push({ sender: 'bot', text: data.reply });
       } catch (err) {
-        loadingDiv.className = 'message error-msg';
-        loadingDiv.textContent = "Erreur système. Connexion interrompue.";
-      } finally {
-        btn.disabled = false;
-        chat.scrollTop = chat.scrollHeight;
+        botMsg.textContent = "Erreur de connexion.";
       }
+      chatBox.scrollTop = chatBox.scrollHeight;
     }
+
+    document.getElementById('prompt-input').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') sendPrompt();
+    });
   </script>
 </body>
 </html>
