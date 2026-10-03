@@ -1,54 +1,74 @@
-const express = require('express');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const express = require("express");
+const axios = require("axios");
+const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+app.use(express.static(path.join(__dirname, "public")));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.static('public'));
+const AI_API_URL = "https://christus-s-apis.vercel.app/api/na/ai/gemini";
+const IMG2PROMPT_API_URL = "https://smfahim.xyz/ai/img2prompt/v3";
 
-app.post('/api/prompt', async (req, res) => {
-  const { prompt, imageBase64, mimeType } = req.body;
+async function analyzeImage(imageUrl) {
+    try {
+        const response = await axios.get(IMG2PROMPT_API_URL, {
+            params: { imageUrl, language: "fr", model: 0 },
+            timeout: 60000
+        });
+        const data = response.data;
+        if (data?.success && typeof data?.prompt === "string") return data.prompt;
+        if (typeof data?.prompt === "string") return data.prompt;
+        if (typeof data?.result?.prompt === "string") return data.result.prompt;
+        if (typeof data?.result === "string") return data.result;
+        return null;
+    } catch (error) {
+        console.log("❌ Erreur analyse image :", error.message);
+        return null;
+    }
+}
 
-  if (!prompt && !imageBase64) {
-    return res.status(400).json({ error: 'Prompt ou image requis' });
-  }
+app.post("/api/prompt", async (req, res) => {
+    try {
+        const { prompt, imageBase64, mimeType } = req.body;
+        let imageContext = "";
 
-  try {
-    // Utilisation du modèle gemini-2.5-flash mis à jour
-    const model = genAI.getGenerativeModel({ 
-      model: 'gemini-2.5-flash',
-      systemInstruction: "Tu es CRIMSON AI, un assistant direct, précis, rigoureux et sans détours."
-    });
+        const userPrompt = prompt || "Analyse cette image et donne-moi les informations importantes.";
 
-    let parts = [];
+        const fullPrompt = `
+Tu es CRIMSON AI 🔴.
+Réponds en français de manière directe et structurée.
 
-    if (imageBase64 && mimeType) {
-      parts.push({
-        inlineData: {
-          data: imageBase64,
-          mimeType: mimeType
+${imageContext}
+
+QUESTION :
+${userPrompt}
+`;
+
+        const response = await axios.post(AI_API_URL, {
+            prompt: fullPrompt
+        }, {
+            headers: { "Content-Type": "application/json" },
+            timeout: 60000
+        });
+
+        const data = response.data;
+        let answer = data?.result?.answer || data?.answer || data?.result || data?.response || data?.message || data?.text;
+
+        if (!answer) {
+            throw new Error("L'API IA n'a renvoyé aucune réponse valide.");
         }
-      });
+
+        res.json({ reply: answer });
+
+    } catch (error) {
+        console.error("SERVER ERROR:", error.message);
+        res.status(500).json({ error: error.message || "Erreur interne du serveur." });
     }
-
-    if (prompt) {
-      parts.push({ text: prompt });
-    }
-
-    const result = await model.generateContent(parts);
-    const response = await result.response;
-    const replyText = response.text();
-
-    return res.json({ reply: replyText });
-  } catch (err) {
-    console.error("Erreur serveur Gemini:", err);
-    return res.status(500).json({ error: err.message || "Erreur interne du serveur." });
-  }
 });
 
 app.listen(PORT, () => {
-  console.log(`Serveur CRIMSON prêt sur le port ${PORT}`);
+    console.log(`Serveur Crimson en ligne sur le port ${PORT}`);
 });
